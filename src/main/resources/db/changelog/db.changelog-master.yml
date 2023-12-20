@@ -1,0 +1,109 @@
+databaseChangeLog:
+  - changeSet:
+      id: init
+      author: VA
+      changes:
+        - createTable:
+            tableName: label
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+
+        - createTable:
+            tableName: post
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: content
+                  type: varchar(255)
+              - column:
+                  name: created
+                  type: timestamp
+              - column:
+                  name: updated
+                  type: timestamp
+                  constraints:
+                    nullable: true
+              - column:
+                  name: post_status
+                  type: varchar(255)
+              - column:
+                  name: status
+                  type: varchar(255)
+
+        - createTable:
+            tableName: post_label
+            columns:
+              - column:
+                  name: post_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_post_label_post
+                    references: post(id)
+              - column:
+                  name: label_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_post_label_label
+                    references: label(id)
+
+        - createTable:
+            tableName: writer
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: firstName
+                  type: varchar(255)
+              - column:
+                  name: lastName
+                  type: varchar(255)
+              - column:
+                  name: status
+                  type: varchar(255)
+
+        - createTable:
+            tableName: writer_post
+            columns:
+              - column:
+                  name: writer_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_writer_post
+                    references: post(id)
+              - column:
+                  name: post_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_post_writer
+                    references: label(id)
