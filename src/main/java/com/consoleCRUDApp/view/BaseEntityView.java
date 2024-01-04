@@ -2,15 +2,16 @@ package com.consoleCRUDApp.view;
 
 import com.consoleCRUDApp.model.Entity;
 
-import java.sql.SQLException;
-
 public abstract class BaseEntityView implements BaseView {
 
     public static final String ENTER_THE_ID_OF_THE_ENTITY = "\nPlease enter the ID of the entity: ";
     public static final String ENTER_A_NUMERIC_VALUE = "\nNo input provided. Please enter a numeric value.";
     public static final String INVALID_ID_PLEASE_ENTER_A_NUMERIC_VALUE = "\nInvalid ID. Please enter a numeric value.";
 
-    public abstract void startMenu() throws SQLException;
+    public abstract void startMenu();
+
+    public abstract String toStringTableViewWithIds(Entity entity);
+    public abstract String toStringTableViewEntityNoIds(Entity entity);
 
     public void showConsoleEntityMenu(String entityClassName) {
         System.out.println(
@@ -57,14 +58,14 @@ public abstract class BaseEntityView implements BaseView {
     public void outputYouAreAboutTo(String operationName,
                                     String entityClassName,
                                     Entity entity) {
-        showInConsole("\nYou are about to " + operationName + " " + entityClassName + " entity: " + entity.toStringTableViewEntityNoIds());
+        showInConsole(
+                "\nYou are about to " + operationName + " " + entityClassName + " entity: " + toStringTableViewEntityNoIds(entity));
     }
 
     public void outputEntityOperationFinishedSuccessfully(String operationName,
-                                                          String entityClassSimpleName,
                                                           Long id) {
         showInConsole(
-                "\nOperation " + operationName + " " + entityClassSimpleName + " entity with ID='" + id
+                "\nOperation " + operationName + " entity with ID='" + id
                 + "' finished successfully!");
     }
 

@@ -13,8 +13,9 @@ import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static com.consoleCRUDApp.config.DBConnection.getConnection;
+import static com.consoleCRUDApp.config.DBConnection.getPreparedStatement;
 import static com.consoleCRUDApp.model.Status.DELETED;
+import static com.consoleCRUDApp.repository.jdbc.SQLQueries.*;
 
 @AllArgsConstructor
 @Getter
@@ -23,79 +24,64 @@ public class JdbcPostRepositoryImpl implements PostRepository {
     private final LabelRepository labelRepository;
 
     @Override
-    public Post save(Post post) {
-        String insertPostSql = "INSERT INTO PROSELYTE_JDBC_DB.post (content, created, post_status, status) VALUES (?, ?, ?, ?)";
+    public Optional<Post> save(Post post) {
+        int affectedRows;
+        try {
+            savePostLabels(post);
 
-        try (Connection connection = getConnection()) {
-
-            connection.setAutoCommit(false);
-            Savepoint savepoint = connection.setSavepoint("SavepointPost");
-
-            try (PreparedStatement postStatement = connection.prepareStatement(insertPostSql, Statement.RETURN_GENERATED_KEYS)) {
+            // Insert post
+            long postId;
+            try (PreparedStatement postStatement = getPreparedStatement(SQL_INSERT_POST, Statement.RETURN_GENERATED_KEYS)) {
                 postStatement.setString(1, post.getContent());
                 postStatement.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
                 postStatement.setString(3, String.valueOf(post.getPostStatus()));
                 postStatement.setString(4, String.valueOf(post.getStatus()));
-
-                int affectedRows = postStatement.executeUpdate();
-                if (affectedRows == 0) {
-                    throw new SQLException("Creating post failed, no rows affected.");
-                }
+                affectedRows = postStatement.executeUpdate();
 
                 try (ResultSet generatedKeys = postStatement.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
-                        post.setId(generatedKeys.getLong(1));
+                        postId = generatedKeys.getLong(1);
                     } else {
                         throw new SQLException("Creating post failed, no ID obtained.");
                     }
                 }
-
-                savePostLabels(post, connection);
-                connection.commit();
-            } catch (SQLException e) {
-                System.out.println("\n>>> SQLException. New post save failed! Executing rollback to savepoint...");
-                connection.rollback(savepoint);
-                System.out.println("\n>>> ERROR: ");
-                e.printStackTrace(System.out);
             }
+            post.setId(postId);
 
-        } catch (SQLException e) {
-            System.out.println("\n>>> ERROR: ");
+            savePostLabelLinks(post);
+        } catch (Exception e) {
+            System.out.println("\n>>> ERROR: New post save failed!");
             e.printStackTrace(System.out);
+            return Optional.empty();
         }
-        return post;
+        return affectedRows > 0 ? Optional.of(post) : Optional.empty();
     }
 
-    private void savePostLabels(Post post, Connection connection) throws SQLException {
-        String deleteOldPostLabelsSql = "DELETE FROM PROSELYTE_JDBC_DB.post_label WHERE post_id = ?";
-        String insertPostLabelSql = "INSERT INTO PROSELYTE_JDBC_DB.post_label (post_id, label_id) VALUES (?, ?)";
+    private void savePostLabels(Post post) {
+        post.getLabels().forEach(label -> {
+            Optional<Label> labelOptional = labelRepository.save(label);
+            long labelId = labelOptional.map(Label::getId)
+                    .orElseGet(() -> labelRepository.getIdByName(label.getName()));
+            label.setId(labelId);
+        });
+    }
 
+    private void savePostLabelLinks(Post post) throws SQLException {
         // Удаление старых связей
-        try (PreparedStatement labelDeleteStatement = connection.prepareStatement(deleteOldPostLabelsSql)) {
-            labelDeleteStatement.setLong(1, post.getId());
+        try (PreparedStatement labelDeleteStatement = getPreparedStatement(SQL_UPDATE_POST_LABELS_STATUS)) {
+            labelDeleteStatement.setString(1, String.valueOf(Status.DELETED));
+            labelDeleteStatement.setLong(2, post.getId());
             labelDeleteStatement.executeUpdate();
         }
 
         // Вставка новых связей
-        try (PreparedStatement labelInsertStatement = connection.prepareStatement(insertPostLabelSql)) {
-            for (Label label : post.getLabels()) {
-                if (label != null) {
-                    labelInsertStatement.setLong(1, post.getId());
-                    if (label.getId() != null) {
-                        labelInsertStatement.setLong(2, label.getId());
-                    } else {
-                        Long existingLabelId = labelRepository.getIdByName(label.getName());
-                        if (existingLabelId != null) {
-                            labelInsertStatement.setLong(2, existingLabelId);
-                        } else {
-                            Label newLabel = labelRepository.save(label);
-                            if (newLabel == null || newLabel.getId() == null) {
-                                throw new SQLException("Creating new label failed, no ID obtained.");
-                            }
-                            labelInsertStatement.setLong(2, newLabel.getId());
-                        }
-                    }
-                    labelInsertStatement.executeUpdate();
+        for (Label label : post.getLabels()) {
+            if (label != null) {
+                try (PreparedStatement linkStatement = getPreparedStatement(SQL_INSERT_POST_LABEL)) {
+                    linkStatement.setLong(1, post.getId());
+                    linkStatement.setLong(2, label.getId());
+                    linkStatement.setString(3, String.valueOf(Status.ACTIVE));
+                    linkStatement.executeUpdate();
                 }
             }
         }
@@ -103,24 +89,18 @@ public class JdbcPostRepositoryImpl implements PostRepository {
 
     @Override
     public Optional<Post> findById(Long id) {
-        String sql = "SELECT p.*, l.id AS label_id, l.name AS label_name FROM PROSELYTE_JDBC_DB.post p\n" +
-                "    LEFT JOIN PROSELYTE_JDBC_DB.post_label pl ON p.id = pl.post_id\n" +
-                "    LEFT JOIN PROSELYTE_JDBC_DB.label l ON pl.label_id = l.id\n" +
-                "    WHERE p.id = ? \n" +
-                "    AND p.status != ?";
-
-        try (Connection connection = getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-
-            statement.setLong(1, id);
+        try (PreparedStatement statement = getPreparedStatement(SQL_SELECT_POST_BY_ID)) {
+            statement.setString(1, String.valueOf(Status.DELETED));
             statement.setString(2, String.valueOf(Status.DELETED));
+            statement.setLong(3, id);
+            statement.setString(4, String.valueOf(Status.DELETED));
 
             Map<Long, Post> postMap = getIdToPostWithLabelsMap(statement);
 
             if (!postMap.isEmpty()) {
                 return Optional.of(postMap.get(id));
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             System.out.println("\n>>> ERROR: ");
             e.printStackTrace(System.out);
         }
@@ -129,15 +109,13 @@ public class JdbcPostRepositoryImpl implements PostRepository {
 
     @Override
     public List<Post> findAll() {
-        String sql = "SELECT p.*, l.id AS label_id, l.name AS label_name FROM PROSELYTE_JDBC_DB.post p\n" +
-                "    LEFT JOIN PROSELYTE_JDBC_DB.post_label pl ON p.id = pl.post_id\n" +
-                "    LEFT JOIN PROSELYTE_JDBC_DB.label l ON pl.label_id = l.id\n" +
-                "    WHERE p.status != ?";
-
-        try (PreparedStatement statement = getConnection().prepareStatement(sql)) {
+        try (PreparedStatement statement = getPreparedStatement(SQL_SELECT_ALL_POSTS)) {
             statement.setString(1, String.valueOf(Status.DELETED));
+            statement.setString(2, String.valueOf(Status.DELETED));
+            statement.setString(3, String.valueOf(Status.DELETED));
 
             Map<Long, Post> postMap = getIdToPostWithLabelsMap(statement);
+
             return new ArrayList<>(postMap.values());
         } catch (SQLException e) {
             System.out.println("\n>>> ERROR: ");
@@ -145,7 +123,7 @@ public class JdbcPostRepositoryImpl implements PostRepository {
         }
     }
 
-    private Map<Long, Post> getIdToPostWithLabelsMap(PreparedStatement statement) throws SQLException {
+    private Map<Long, Post> getIdToPostWithLabelsMap(PreparedStatement statement) {
         Map<Long, Post> postMap = new HashMap<>();
 
         try (ResultSet resultSet = statement.executeQuery()) {
@@ -168,41 +146,51 @@ public class JdbcPostRepositoryImpl implements PostRepository {
                 addPostLabel(resultSet, post);
                 postMap.put(postId, post);
             }
+        } catch (SQLException e) {
+            System.out.println("\n>>> ERROR: ");
+            e.printStackTrace(System.out);
         }
         return postMap;
     }
 
-    void addPostLabel(ResultSet resultSet, Post post) throws SQLException {
-        long labelId = resultSet.getLong("label_id");
-        if (labelId != 0) {
-            if (post.getLabels() == null) {
-                post.setLabels(new ArrayList<>());
+    void addPostLabel(ResultSet resultSet, Post post) {
+        try {
+            long labelId = resultSet.getLong("label_id");
+            if (labelId != 0) {
+                if (post.getLabels() == null) {
+                    post.setLabels(new ArrayList<>());
+                }
+                if (post.getLabels().stream()
+                        .noneMatch(label -> label.getId() == labelId)) {
+                    Label label = Label.builder()
+                            .id(resultSet.getLong("label_id"))
+                            .name(resultSet.getString("label_name"))
+                            .status(Status.valueOf(resultSet.getString("status")))
+                            .build();
+                    post.getLabels().add(label);
+                }
             }
-            if (post.getLabels().stream().noneMatch(label -> label.getId() == labelId)) {
-                Label label = Label.builder()
-                        .id(resultSet.getLong("label_id"))
-                        .name(resultSet.getString("label_name"))
-                        .build();
-                post.getLabels().add(label);
-            }
+        } catch (SQLException e) {
+            System.out.println("\n>>> ERROR: ");
+            e.printStackTrace(System.out);
         }
     }
 
     @Override
     public Optional<Post> update(Post post) {
-        String sql = "UPDATE PROSELYTE_JDBC_DB.post SET content = ?, updated = ?, post_status = ? WHERE id = ?";
         int affectedRows = 0;
-        try (Connection connection = getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+        try {
+            savePostLabels(post);
 
-            statement.setString(1, post.getContent());
-            statement.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
-            statement.setString(3, String.valueOf(post.getPostStatus()));
-            statement.setLong(4, post.getId());
-            affectedRows = statement.executeUpdate();
+            savePostLabelLinks(post);
 
-            savePostLabels(post, connection);
-
+            try (PreparedStatement statement = getPreparedStatement(SQL_UPDATE_POST_BY_ID)) {
+                statement.setString(1, post.getContent());
+                statement.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
+                statement.setString(3, String.valueOf(post.getPostStatus()));
+                statement.setLong(4, post.getId());
+                affectedRows = statement.executeUpdate();
+            }
         } catch (SQLException e) {
             System.out.println("\n>>> ERROR: ");
             e.printStackTrace(System.out);
@@ -213,9 +201,8 @@ public class JdbcPostRepositoryImpl implements PostRepository {
 
     @Override
     public boolean deleteById(Long id) {
-        String sql = "UPDATE PROSELYTE_JDBC_DB.post SET status = ?, post_status = ? WHERE id = ?";
         int affectedRows = 0;
-        try (PreparedStatement statement = getConnection().prepareStatement(sql)) {
+        try (PreparedStatement statement = getPreparedStatement(SQL_UPDATE_POST_STATUS_BY_ID)) {
             statement.setString(1, String.valueOf(DELETED));
             statement.setString(2, String.valueOf(DELETED));
             statement.setLong(3, id);
@@ -225,11 +212,6 @@ public class JdbcPostRepositoryImpl implements PostRepository {
             e.printStackTrace(System.out);
         }
         return affectedRows > 0;
-    }
-
-    @Override
-    public Class<Post> getEntityClass() {
-        return Post.class;
     }
 
 }

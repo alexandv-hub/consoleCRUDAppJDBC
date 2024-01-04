@@ -69,6 +69,9 @@ databaseChangeLog:
                     nullable: false
                     foreignKeyName: fk_post_label_label
                     references: label(id)
+              - column:
+                  name: status
+                  type: varchar(255)
 
         - createTable:
             tableName: writer
@@ -98,12 +101,31 @@ databaseChangeLog:
                   type: bigint
                   constraints:
                     nullable: false
-                    foreignKeyName: fk_writer_post
-                    references: post(id)
+                    foreignKeyName: fk_writer
+                    references: writer(id)
               - column:
                   name: post_id
                   type: bigint
                   constraints:
                     nullable: false
-                    foreignKeyName: fk_post_writer
-                    references: label(id)
+                    foreignKeyName: fk_post
+                    references: post(id)
+              - column:
+                  name: status
+                  type: varchar(255)
+  - changeSet:
+      id: 2
+      author: VA
+      changes:
+        - addUniqueConstraint:
+            tableName: label
+            columnNames: name
+            constraintName: unique_label_name
+        - addUniqueConstraint:
+            tableName: writer_post
+            columnNames: writer_id, post_id
+            constraintName: unique_writer_post
+        - addUniqueConstraint:
+            tableName: post_label
+            columnNames: post_id, label_id
+            constraintName: unique_post_label

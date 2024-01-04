@@ -4,12 +4,11 @@ import com.consoleCRUDApp.model.Label;
 import com.consoleCRUDApp.model.Post;
 import com.consoleCRUDApp.model.PostStatus;
 import com.consoleCRUDApp.model.Status;
-import com.consoleCRUDApp.service.PostServiceImpl;
+import com.consoleCRUDApp.service.impl.PostServiceImpl;
 import com.consoleCRUDApp.view.PostView;
 import com.github.freva.asciitable.AsciiTable;
 import com.github.freva.asciitable.ColumnData;
 
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,10 +41,12 @@ public class PostController
     }
 
     @Override
-    public void saveNewEntity(Post newPostToSave, String operationName) throws SQLException {
-        Post savedPost = service.save(newPostToSave);
-        if (service.findById(savedPost.getId()).isPresent()) {
-            showInfoMessageEntityOperationFinishedSuccessfully(operationName, newPostToSave.getId());
+    public void saveNewEntity(Post newPostToSave, String operationName) {
+        Optional<Post> savedPostOptional = service.save(newPostToSave);
+        if (savedPostOptional.isPresent()) {
+            if (service.findById(savedPostOptional.get().getId()).isPresent()) {
+                showInfoMessageEntityOperationFinishedSuccessfully(operationName, newPostToSave.getId());
+            }
         } else {
             postView.showInConsole("\nSave new Post operation failed!!!\n");
             showMenu();
@@ -53,12 +54,22 @@ public class PostController
     }
 
     @Override
-    public Post requestEntityUpdatesFromUser(Long id) throws SQLException {
+    public Post requestEntityUpdatesFromUser(Long id) {
         String updatedPostContent = postView.getUserInput("\nPlease input the Post new Content: ");
 
-        int updatedPostStatus = Integer.parseInt(postView.getUserInput("\nPlease input the Post new PostStatus ('1'-ACTIVE, '2'-UNDER_REVIEW): "));
-        while (updatedPostStatus != 1 && updatedPostStatus != 2) {
-            updatedPostStatus = Integer.parseInt(postView.getUserInput("\nIncorrect input! Please input the Post new PostStatus ('1'-ACTIVE, '2'-UNDER_REVIEW): "));
+        int updatedPostStatus = 0;
+        boolean validInput = false;
+        while (!validInput) {
+            try {
+                updatedPostStatus = Integer.parseInt(postView.getUserInput("\nPlease input the Post new PostStatus ('1'-ACTIVE, '2'-UNDER_REVIEW): "));
+                if (updatedPostStatus == 1 || updatedPostStatus == 2) {
+                    validInput = true;
+                } else {
+                    postView.showInConsole("\nIncorrect input! The status must be '1' for ACTIVE or '2' for UNDER_REVIEW.");
+                }
+            } catch (NumberFormatException e) {
+                postView.showInConsole("\nIncorrect input! Please input a numeric value.");
+            }
         }
 
         List<Label> updatedLabelList = new ArrayList<>();
@@ -85,7 +96,7 @@ public class PostController
     @Override
     public void showEntitiesListFormatted(List<Post> activeEntities) {
         Character[] borderStyle = AsciiTable.FANCY_ASCII;
-        List<ColumnData<Post>> columns = Post.getColumnDataWithIds();
+        List<ColumnData<Post>> columns = postView.getColumnDataWithIds();
         String rend = AsciiTable.getTable(borderStyle, activeEntities, columns);
         postView.showInConsole(rend);
     }

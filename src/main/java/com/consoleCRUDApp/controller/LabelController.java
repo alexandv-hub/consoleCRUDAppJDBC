@@ -2,13 +2,13 @@ package com.consoleCRUDApp.controller;
 
 import com.consoleCRUDApp.model.Label;
 import com.consoleCRUDApp.model.Status;
-import com.consoleCRUDApp.service.LabelServiceImpl;
+import com.consoleCRUDApp.service.impl.LabelServiceImpl;
 import com.consoleCRUDApp.view.LabelView;
 import com.github.freva.asciitable.AsciiTable;
 import com.github.freva.asciitable.ColumnData;
 
-import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 public class LabelController
                         extends GenericEntityController<Label, LabelServiceImpl, LabelView> {
@@ -30,19 +30,18 @@ public class LabelController
     }
 
     @Override
-    public void saveNewEntity(Label newLabelToSave, String operationName) throws SQLException {
+    public void saveNewEntity(Label newLabelToSave, String operationName) {
         if (!service.isLabelExistInRepository(newLabelToSave)) {
-            Label savedLabel = service.save(newLabelToSave);
-            if (service.findById(savedLabel.getId()).isPresent()) {
-                showInfoMessageEntityOperationFinishedSuccessfully(operationName, savedLabel.getId());
+            Optional<Label> savedLabel = service.save(newLabelToSave);
+            if (service.findById(savedLabel.get().getId()).isPresent()) {
+                showInfoMessageEntityOperationFinishedSuccessfully(operationName, savedLabel.get().getId());
             } else {
                 labelView.showInConsole("\nSave new Label operation failed!!!\n");
                 showMenu();
             }
         }
         else {
-            String entityClassSimpleName = service.getEntityClass().getSimpleName();
-            labelView.outputMessageEntityAlreadyExists(entityClassSimpleName, "Name", newLabelToSave.getName());
+            labelView.outputMessageEntityAlreadyExists("LABEL", "Name", newLabelToSave.getName());
         }
     }
 
@@ -59,7 +58,7 @@ public class LabelController
     @Override
     public void showEntitiesListFormatted(List<Label> activeEntities) {
         Character[] borderStyle = AsciiTable.FANCY_ASCII;
-        List<ColumnData<Label>> columns = Label.getColumnDataWithIds();
+        List<ColumnData<Label>> columns = labelView.getColumnDataWithIds();
         String rend = AsciiTable.getTable(borderStyle, activeEntities, columns);
         labelView.showInConsole(rend);
     }

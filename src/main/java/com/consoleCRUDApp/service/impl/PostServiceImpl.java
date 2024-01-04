@@ -1,10 +1,10 @@
-package com.consoleCRUDApp.service;
+package com.consoleCRUDApp.service.impl;
 
 import com.consoleCRUDApp.model.Post;
 import com.consoleCRUDApp.repository.PostRepository;
+import com.consoleCRUDApp.service.PostService;
 import lombok.AllArgsConstructor;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,32 +14,27 @@ public class PostServiceImpl implements PostService {
     PostRepository postRepository;
 
     @Override
-    public Post save(Post post) throws SQLException {
+    public Optional<Post> save(Post post) {
         return postRepository.save(post);
     }
 
     @Override
-    public Optional<Post> findById(Long id) throws SQLException {
+    public Optional<Post> findById(Long id) {
         return postRepository.findById(id);
     }
 
     @Override
-    public List<Post> findAll() throws SQLException {
+    public List<Post> findAll() {
         return postRepository.findAll();
     }
 
     @Override
-    public Optional<Post> update(Post post) throws SQLException {
+    public Optional<Post> update(Post post) {
         return postRepository.update(post);
     }
 
     @Override
-    public boolean deleteById(Long id) throws SQLException {
+    public boolean deleteById(Long id) {
         return postRepository.deleteById(id);
-    }
-
-    @Override
-    public Class<Post> getEntityClass() {
-        return postRepository.getEntityClass();
     }
 }

@@ -7,8 +7,4 @@ public interface Entity {
 
     Status getStatus();
     void setStatus(Status status);
-
-    String toStringTableViewWithIds();
-    String toStringTableViewEntityNoIds();
-
 }

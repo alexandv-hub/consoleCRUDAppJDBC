@@ -1,10 +1,10 @@
-package com.consoleCRUDApp.service;
+package com.consoleCRUDApp.service.impl;
 
 import com.consoleCRUDApp.model.Writer;
 import com.consoleCRUDApp.repository.WriterRepository;
+import com.consoleCRUDApp.service.WriterService;
 import lombok.AllArgsConstructor;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,32 +14,27 @@ public class WriterServiceImpl implements WriterService {
     WriterRepository writerRepository;
 
     @Override
-    public Writer save(Writer writer) throws SQLException {
+    public Optional<Writer> save(Writer writer) {
         return writerRepository.save(writer);
     }
 
     @Override
-    public Optional<Writer> findById(Long id) throws SQLException {
+    public Optional<Writer> findById(Long id) {
         return writerRepository.findById(id);
     }
 
     @Override
-    public List<Writer> findAll() throws SQLException {
+    public List<Writer> findAll() {
         return writerRepository.findAll();
     }
 
     @Override
-    public Optional<Writer> update(Writer writer) throws SQLException {
+    public Optional<Writer> update(Writer writer) {
         return writerRepository.update(writer);
     }
 
     @Override
-    public boolean deleteById(Long id) throws SQLException {
+    public boolean deleteById(Long id) {
         return writerRepository.deleteById(id);
-    }
-
-    @Override
-    public Class<Writer> getEntityClass() {
-        return Writer.class;
     }
 }

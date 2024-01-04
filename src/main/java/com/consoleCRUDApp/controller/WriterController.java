@@ -1,14 +1,17 @@
 package com.consoleCRUDApp.controller;
 
-import com.consoleCRUDApp.model.*;
-import com.consoleCRUDApp.service.WriterServiceImpl;
+import com.consoleCRUDApp.model.Post;
+import com.consoleCRUDApp.model.PostStatus;
+import com.consoleCRUDApp.model.Status;
+import com.consoleCRUDApp.model.Writer;
+import com.consoleCRUDApp.service.impl.WriterServiceImpl;
 import com.consoleCRUDApp.view.WriterView;
 import com.github.freva.asciitable.AsciiTable;
 import com.github.freva.asciitable.ColumnData;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class WriterController
         extends GenericEntityController<Writer, WriterServiceImpl, WriterView>
@@ -81,17 +84,19 @@ public class WriterController
     @Override
     public void showEntitiesListFormatted(List<Writer> activeEntities) {
         Character[] borderStyle = AsciiTable.FANCY_ASCII;
-        List<ColumnData<Writer>> columns = Writer.getColumnDataWithIds();
+        List<ColumnData<Writer>> columns = writerView.getColumnDataWithIds();
         String rend = AsciiTable.getTable(borderStyle, activeEntities, columns);
         writerView.showInConsole(rend);
     }
 
     @Override
-    public void saveNewEntity(Writer newWriterToSave, String operationName) throws SQLException {
-
-        Writer savedWriter = service.save(newWriterToSave);
-        if (service.findById(savedWriter.getId()).isPresent()) {
-            showInfoMessageEntityOperationFinishedSuccessfully(operationName, newWriterToSave.getId());
+    public void saveNewEntity(Writer newWriterToSave, String operationName) {
+        Optional<Writer> savedWriterOptional = service.save(newWriterToSave);
+        if (savedWriterOptional.isPresent()) {
+            if (savedWriterOptional.get().getId() != null) {
+                long savedId = savedWriterOptional.get().getId();
+                showInfoMessageEntityOperationFinishedSuccessfully(operationName, savedId);
+            }
         } else {
             writerView.showInConsole("\nSave new Writer operation failed!!!\n");
             showMenu();

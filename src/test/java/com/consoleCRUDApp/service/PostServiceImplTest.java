@@ -2,13 +2,13 @@ package com.consoleCRUDApp.service;
 
 import com.consoleCRUDApp.model.Post;
 import com.consoleCRUDApp.repository.PostRepository;
+import com.consoleCRUDApp.service.impl.PostServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -28,18 +28,18 @@ public class PostServiceImplTest {
     private PostServiceImpl postService;
 
     @Test
-    void testSavePost() throws SQLException {
+    void testSavePost() {
         Post post = Post.builder().build();
-        when(postRepository.save(any(Post.class))).thenReturn(post);
+        when(postRepository.save(any(Post.class))).thenReturn(Optional.ofNullable(post));
 
-        Post savedPost = postService.save(post);
+        Optional<Post> savedPost = postService.save(post);
 
         assertNotNull(savedPost);
         verify(postRepository).save(post);
     }
 
     @Test
-    void testFindById() throws SQLException {
+    void testFindById() {
         Long id = 1L;
         Post post = Post.builder().build();
         when(postRepository.findById(id)).thenReturn(Optional.of(post));
@@ -52,7 +52,7 @@ public class PostServiceImplTest {
     }
 
     @Test
-    void testFindAll() throws SQLException {
+    void testFindAll() {
         Post post = Post.builder().build();
         when(postRepository.findAll()).thenReturn(Collections.singletonList(post));
 
@@ -64,7 +64,7 @@ public class PostServiceImplTest {
     }
 
     @Test
-    void testUpdatePost() throws SQLException {
+    void testUpdatePost() {
         Post post = Post.builder().build();
         when(postRepository.update(post)).thenReturn(Optional.of(post));
 
@@ -75,7 +75,7 @@ public class PostServiceImplTest {
     }
 
     @Test
-    void testDeleteById() throws SQLException {
+    void testDeleteById() {
         Long id = 1L;
         when(postRepository.deleteById(id)).thenReturn(true);
 
@@ -83,16 +83,6 @@ public class PostServiceImplTest {
 
         assertTrue(isDeleted);
         verify(postRepository).deleteById(id);
-    }
-
-    @Test
-    void testGetEntityClass() {
-        when(postRepository.getEntityClass()).thenReturn(Post.class);
-
-        Class<Post> entityClass = postService.getEntityClass();
-
-        assertEquals(Post.class, entityClass);
-        verify(postRepository).getEntityClass();
     }
 
 }

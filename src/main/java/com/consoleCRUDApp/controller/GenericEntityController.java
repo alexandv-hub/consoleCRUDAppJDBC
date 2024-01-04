@@ -5,7 +5,6 @@ import com.consoleCRUDApp.service.GenericEntityService;
 import com.consoleCRUDApp.view.BaseEntityView;
 import lombok.AllArgsConstructor;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -19,17 +18,17 @@ public abstract class GenericEntityController<T extends Entity,
     protected final V baseEntityView;
 
     public abstract void showEntitiesListFormatted(List<T> activeEntities);
-    public abstract void saveNewEntity(T entity, String operationName) throws SQLException;
+    public abstract void saveNewEntity(T entity, String operationName);
     public abstract T prepareNewEntity();
-    public abstract T requestEntityUpdatesFromUser(Long id) throws SQLException;
+    public abstract T requestEntityUpdatesFromUser(Long id);
 
     @Override
-    public void showMenu() throws SQLException {
+    public void showMenu() {
         baseEntityView.startMenu();
     }
 
     @Override
-    public void createAndSaveNewEntity() throws SQLException {
+    public void createAndSaveNewEntity() {
         baseEntityView.showInConsole("Starting CREATE new entity...");
         String createOperationName = "CREATE";
 
@@ -46,7 +45,7 @@ public abstract class GenericEntityController<T extends Entity,
     }
 
     @Override
-    public void findEntityById() throws SQLException {
+    public void findEntityById() {
         baseEntityView.showInConsole("Starting find entity by ID...");
         Long id = baseEntityView.promptEntityIdFromUser();
         service.findById(id).ifPresentOrElse(
@@ -59,14 +58,14 @@ public abstract class GenericEntityController<T extends Entity,
     }
 
     @Override
-    public void showAllActiveEntities() throws SQLException {
+    public void showAllActiveEntities() {
         baseEntityView.showInConsole("Starting show all entities...");
         List<T> activeEntities = service.findAll();
 
         if (!activeEntities.isEmpty()) {
             baseEntityView.printlnToConsole("\nFound " + activeEntities.size() + " entities.");
             baseEntityView.printlnToConsole(
-                    "All " + service.getEntityClass().getSimpleName() + " entities: ");
+                    "All entities: ");
             showEntitiesListFormatted(activeEntities);
         } else {
             baseEntityView.showInConsole("\nNo entities found!");
@@ -74,22 +73,16 @@ public abstract class GenericEntityController<T extends Entity,
     }
 
     @Override
-    public void updateEntity() throws SQLException {
+    public void updateEntity() {
         baseEntityView.showInConsole("Starting UPDATE entity by ID...");
         Long id = baseEntityView.promptEntityIdFromUser();
         service.findById(id).ifPresentOrElse(
-                entity -> {
-                    try {
-                        processEntityUpdate(entity);
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
-                    }
-                },
+                entity -> processEntityUpdate(entity),
                 () -> showInfoMessageEntityWithIdNotFound(id)
         );
     }
 
-    private void processEntityUpdate(T entity) throws SQLException {
+    private void processEntityUpdate(T entity) {
         String updateOperationName = "UPDATE";
         String entityClassSimpleName = entity.getClass().getSimpleName();
 
@@ -106,25 +99,19 @@ public abstract class GenericEntityController<T extends Entity,
     }
 
     @Override
-    public void deleteEntityById() throws SQLException {
+    public void deleteEntityById() {
         baseEntityView.showInConsole("Starting DELETE entity by ID...");
         Long id = baseEntityView.promptEntityIdFromUser();
         service.findById(id).ifPresentOrElse(
-                entity -> {
-                    try {
-                        processEntityDeletion(entity, id);
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
-                    }
-                },
+                entity -> processEntityDeletion(entity, id),
                 () -> showInfoMessageEntityWithIdNotFound(id)
         );
     }
 
-    private void processEntityDeletion(T entity, Long id) throws SQLException {
+    private void processEntityDeletion(T entity, Long id) {
         String operationName = "DELETE";
         String entityClassSimpleName = entity.getClass().getSimpleName();
-        showInfoMessageYouAreAboutTo(operationName, entityClassSimpleName, entity);
+        baseEntityView.outputYouAreAboutTo(operationName, entityClassSimpleName, entity);
 
         if (baseEntityView.userConfirmsOperation()) {
             deleteEntity(operationName, id);
@@ -133,7 +120,7 @@ public abstract class GenericEntityController<T extends Entity,
         }
     }
 
-    private void deleteEntity(String operationName, Long id) throws SQLException {
+    private void deleteEntity(String operationName, Long id) {
         try {
             service.deleteById(id);
             showInfoMessageEntityOperationFinishedSuccessfully(operationName, id);
@@ -156,14 +143,12 @@ public abstract class GenericEntityController<T extends Entity,
         baseEntityView.outputEntityOperationCancelled(currOperationName, entityClassSimpleName);
     }
 
-    private void showInfoMessageYouAreAboutTo(String operationName, String entityClassName, T entity) {
+    private void showInfoMessageYouAreAboutTo(String operationName, String entityClassName, Entity entity) {
         baseEntityView.outputYouAreAboutTo(operationName, entityClassName, entity);
     }
 
     void showInfoMessageEntityOperationFinishedSuccessfully(String operationName, Long id) {
-        String entityClassSimpleName = service.getEntityClass().getSimpleName();
-        baseEntityView.outputEntityOperationFinishedSuccessfully(operationName, entityClassSimpleName, id);
+        baseEntityView.outputEntityOperationFinishedSuccessfully(operationName, id);
     }
-
 }
 

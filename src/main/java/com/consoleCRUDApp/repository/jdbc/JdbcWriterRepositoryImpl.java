@@ -13,8 +13,9 @@ import lombok.Getter;
 import java.sql.*;
 import java.util.*;
 
-import static com.consoleCRUDApp.config.DBConnection.getConnection;
+import static com.consoleCRUDApp.config.DBConnection.*;
 import static com.consoleCRUDApp.model.Status.DELETED;
+import static com.consoleCRUDApp.repository.jdbc.SQLQueries.*;
 
 @AllArgsConstructor
 @Getter
@@ -24,67 +25,89 @@ public class JdbcWriterRepositoryImpl implements WriterRepository {
     private final LabelRepository labelRepository;
 
     @Override
-    public Writer save(Writer writer) {
-        String insertWriterSql = "INSERT INTO PROSELYTE_JDBC_DB.writer (firstName, lastName, status) VALUES (?, ?, ?)";
+    public Optional<Writer> save(Writer writer) {
+        Connection connection = null;
+        Savepoint savepointWriter = null;
 
-        try (Connection connection = getConnection()) {
+        int affectedRows;
+        try {
+            connection = getConnectionNoAutoCommit();
+            savepointWriter = connection.setSavepoint("savepointWriter");
 
-            connection.setAutoCommit(false);
-            Savepoint savepoint = connection.setSavepoint("SavepointWriter");
+            saveWriterPosts(writer);
 
-            try (PreparedStatement writerStatement = connection.prepareStatement(insertWriterSql, Statement.RETURN_GENERATED_KEYS)) {
+            long writerId;
+            try (PreparedStatement writerStatement = getPreparedStatement(SQL_INSERT_WRITER, Statement.RETURN_GENERATED_KEYS)) {
                 writerStatement.setString(1, writer.getFirstName());
                 writerStatement.setString(2, writer.getLastName());
                 writerStatement.setString(3, String.valueOf(Status.ACTIVE));
-
-                int affectedRows = writerStatement.executeUpdate();
-                if (affectedRows == 0) {
-                    throw new SQLException("Creating writer failed, no rows affected.");
-                }
+                affectedRows = writerStatement.executeUpdate();
 
                 try (ResultSet generatedKeys = writerStatement.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
-                        writer.setId(generatedKeys.getLong(1));
+                        writerId = generatedKeys.getLong(1);
                     } else {
                         throw new SQLException("Creating writer failed, no ID obtained.");
                     }
                 }
-
-                saveWriterPosts(writer, connection);
-                connection.commit();
-            } catch (SQLException e) {
-                System.out.println("\n>>> SQLException. New writer save failed! Executing rollback to savepoint...");
-                connection.rollback(savepoint);
-                System.out.println("\n>>> ERROR: ");
-                e.printStackTrace(System.out);
             }
+            writer.setId(writerId);
 
-        } catch (SQLException e) {
-            System.out.println("\n>>> ERROR: ");
+            saveWriterPostLinks(writer);
+
+            connection.commit();
+        } catch (Exception e) {
+            System.out.println("\n>>> ERROR: New writer save failed!");
             e.printStackTrace(System.out);
+            if (connection != null) {
+                try {
+                    connection.rollback(savepointWriter);
+                    System.out.println("\n>>> INFO: Rollback to savepoint...");
+                } catch (SQLException ex) {
+                    System.out.println("\n>>> ERROR: when roll back to savepoint!");
+                    e.printStackTrace(System.out);
+                }
+            }
+            return Optional.empty();
         }
-        return writer;
+        finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                    System.out.println("\n>>> INFO: closing connection...");
+                } catch (SQLException e) {
+                    System.out.println("\n>>> ERROR: when closing connection!");
+                    e.printStackTrace(System.out);
+                }
+            }
+        }
+        return affectedRows > 0 ? Optional.of(writer) : Optional.empty();
     }
 
-    private void saveWriterPosts(Writer writer, Connection connection) throws SQLException {
-        String insertWriterPostSql = "INSERT INTO PROSELYTE_JDBC_DB.writer_post (writer_id, post_id) VALUES (?, ?)";
+    private void saveWriterPosts(Writer writer) {
+        if (writer.getPosts() != null) {
+            for (Post post : writer.getPosts()) {
+                if (post != null) {
+                    Optional<Post> optionalPost = postRepository.save(post);
+                    if (optionalPost.isPresent()) {
+                        long postId = optionalPost.get().getId();
+                        post.setId(postId);
+                    }
+                }
+            }
+        }
+    }
 
-        try (PreparedStatement postInsertStatement = connection.prepareStatement(insertWriterPostSql)) {
+    private void saveWriterPostLinks(Writer writer) throws SQLException {
+        try (PreparedStatement postInsertStatement = getPreparedStatement(SQL_INSERT_WRITER_POSTS)) {
             if (writer.getPosts() != null) {
                 for (Post post : writer.getPosts()) {
                     if (post != null) {
                         postInsertStatement.setLong(1, writer.getId());
-                        if (post.getId() != null) {
-                            postInsertStatement.setLong(2, post.getId());
-                        } else {
-                            Post newPost = postRepository.save(post);
-                            if (newPost == null || newPost.getId() == null) {
-                                throw new SQLException("Creating new writer post failed, no ID obtained.");
-                            }
-                            postInsertStatement.setLong(2, newPost.getId());
-                        }
+                        postInsertStatement.setLong(2, post.getId());
+                        postInsertStatement.setString(3, String.valueOf(Status.ACTIVE));
+                        postInsertStatement.executeUpdate();
                     }
-                    postInsertStatement.executeUpdate();
                 }
             }
         }
@@ -92,15 +115,7 @@ public class JdbcWriterRepositoryImpl implements WriterRepository {
 
     @Override
     public Optional<Writer> findById(Long id) {
-        String sql = "SELECT w.*, p.id AS post_id, p.content, p.created, p.updated, p.post_status, p.status " +
-                "FROM PROSELYTE_JDBC_DB.writer w " +
-                "LEFT JOIN PROSELYTE_JDBC_DB.writer_post wp ON w.id = wp.writer_id " +
-                "LEFT JOIN PROSELYTE_JDBC_DB.post p ON wp.post_id = p.id " +
-                "WHERE w.status != ? AND (p.status != ? OR p.status IS NULL)";
-
-        try (Connection connection = getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-
+        try (PreparedStatement statement = getPreparedStatement(SQL_SELECT_WRITER_BY_ID)) {
             statement.setString(1, String.valueOf(Status.DELETED));
             statement.setLong(2, id);
 
@@ -116,15 +131,7 @@ public class JdbcWriterRepositoryImpl implements WriterRepository {
 
     @Override
     public List<Writer> findAll() {
-        String sql = "SELECT w.*, p.id AS post_id, p.content, p.created, p.updated, p.post_status, p.status " +
-                "FROM PROSELYTE_JDBC_DB.writer w " +
-                "LEFT JOIN PROSELYTE_JDBC_DB.writer_post wp ON w.id = wp.writer_id " +
-                "LEFT JOIN PROSELYTE_JDBC_DB.post p ON wp.post_id = p.id " +
-                "WHERE w.status != ? AND p.status != ?";
-
-        try (Connection connection = getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-
+        try (PreparedStatement statement = getPreparedStatement(SQL_SELECT_ALL_WRITERS)) {
             statement.setString(1, String.valueOf(Status.DELETED));
             statement.setString(2, String.valueOf(Status.DELETED));
 
@@ -138,7 +145,7 @@ public class JdbcWriterRepositoryImpl implements WriterRepository {
         }
     }
 
-    private Map<Long, Writer> getIdToWriterWithPostsMap(PreparedStatement statement) throws SQLException {
+    private Map<Long, Writer> getIdToWriterWithPostsMap(PreparedStatement statement) {
         Map<Long, Writer> writerMap = new HashMap<>();
 
         try (ResultSet resultSet = statement.executeQuery()) {
@@ -177,17 +184,17 @@ public class JdbcWriterRepositoryImpl implements WriterRepository {
                     }
                 }
             }
+        } catch (SQLException e) {
+            System.out.println("\n>>> ERROR: ");
+            e.printStackTrace(System.out);
         }
         return writerMap;
     }
 
     @Override
     public Optional<Writer> update(Writer writer) {
-        String sql = "UPDATE PROSELYTE_JDBC_DB.writer SET firstName = ?, lastName = ? WHERE id = ?";
         int affectedRows = 0;
-        try (Connection connection = getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-
+        try (PreparedStatement statement = getPreparedStatement(SQL_UPDATE_WRITER_BY_ID)) {
             statement.setString(1, writer.getFirstName());
             statement.setString(2, writer.getLastName());
             statement.setLong(3, writer.getId());
@@ -202,9 +209,8 @@ public class JdbcWriterRepositoryImpl implements WriterRepository {
 
     @Override
     public boolean deleteById(Long id) {
-        String sql = "UPDATE PROSELYTE_JDBC_DB.writer SET status = ? WHERE id = ?";
         int affectedRows = 0;
-        try (PreparedStatement statement = getConnection().prepareStatement(sql)) {
+        try (PreparedStatement statement = getPreparedStatement(SQL_UPDATE_WRITER_STATUS_BY_ID)) {
             statement.setString(1, String.valueOf(DELETED));
             statement.setLong(2, id);
             affectedRows = statement.executeUpdate();
@@ -213,10 +219,5 @@ public class JdbcWriterRepositoryImpl implements WriterRepository {
             e.printStackTrace(System.out);
         }
         return affectedRows > 0;
-    }
-
-    @Override
-    public Class<Writer> getEntityClass() {
-        return Writer.class;
     }
 }

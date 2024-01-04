@@ -68,7 +68,6 @@ class JdbcDeveloperRepositoryImpl implements DeveloperRepository
 3. Откройте терминал и перейдите в директорию проекта.
 4. Выполните команду `mvn clean install` или `mvn package`.
 5. Запустите приложение, используя команду `java -jar target/consoleCRUDApp-1.0-SNAPSHOT.jar`. 
-6. Выполните команду `liquibase --defaultsFile=src/main/resources/liquibase.properties update`.
 
 ### Технические требования
 - Java версии 8 или выше.

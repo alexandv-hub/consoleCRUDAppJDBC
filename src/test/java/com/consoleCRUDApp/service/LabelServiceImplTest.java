@@ -2,13 +2,13 @@ package com.consoleCRUDApp.service;
 
 import com.consoleCRUDApp.model.Label;
 import com.consoleCRUDApp.repository.LabelRepository;
+import com.consoleCRUDApp.service.impl.LabelServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -28,18 +28,18 @@ public class LabelServiceImplTest {
     private LabelServiceImpl labelService;
 
     @Test
-    void testSaveLabel() throws SQLException {
+    void testSaveLabel() {
         Label label = Label.builder().build();
-        when(labelRepository.save(any(Label.class))).thenReturn(label);
+        when(labelRepository.save(any(Label.class))).thenReturn(Optional.ofNullable(label));
 
-        Label savedLabel = labelService.save(label);
+        Optional<Label> savedLabel = labelService.save(label);
 
         assertNotNull(savedLabel);
         verify(labelRepository).save(label);
     }
 
     @Test
-    void testFindById() throws SQLException {
+    void testFindById() {
         Long id = 1L;
         Label label = Label.builder().build();
         when(labelRepository.findById(id)).thenReturn(Optional.of(label));
@@ -52,7 +52,7 @@ public class LabelServiceImplTest {
     }
 
     @Test
-    void testFindAll() throws SQLException {
+    void testFindAll() {
         Label label = Label.builder().build();
         when(labelRepository.findAll()).thenReturn(Collections.singletonList(label));
 
@@ -64,7 +64,7 @@ public class LabelServiceImplTest {
     }
 
     @Test
-    void testUpdateLabel() throws SQLException {
+    void testUpdateLabel() {
         Label label = Label.builder().build();
         when(labelRepository.update(label)).thenReturn(Optional.of(label));
 
@@ -75,7 +75,7 @@ public class LabelServiceImplTest {
     }
 
     @Test
-    void testDeleteById() throws SQLException {
+    void testDeleteById() {
         Long id = 1L;
         when(labelRepository.deleteById(id)).thenReturn(true);
 
@@ -83,16 +83,6 @@ public class LabelServiceImplTest {
 
         assertTrue(isDeleted);
         verify(labelRepository).deleteById(id);
-    }
-
-    @Test
-    void testGetEntityClass() {
-        when(labelRepository.getEntityClass()).thenReturn(Label.class);
-
-        Class<Label> entityClass = labelService.getEntityClass();
-
-        assertEquals(Label.class, entityClass);
-        verify(labelRepository).getEntityClass();
     }
 
 }

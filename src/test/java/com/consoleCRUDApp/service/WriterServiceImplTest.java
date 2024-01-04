@@ -2,13 +2,13 @@ package com.consoleCRUDApp.service;
 
 import com.consoleCRUDApp.model.Writer;
 import com.consoleCRUDApp.repository.WriterRepository;
+import com.consoleCRUDApp.service.impl.WriterServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -26,18 +26,18 @@ public class WriterServiceImplTest {
     private WriterServiceImpl writerService;
 
     @Test
-    void testSaveWriter() throws SQLException {
+    void testSaveWriter() {
         Writer writer = Writer.builder().build();
-        when(writerRepository.save(writer)).thenReturn(writer);
+        when(writerRepository.save(writer)).thenReturn(Optional.ofNullable(writer));
 
-        Writer savedWriter = writerService.save(writer);
+        Optional<Writer> savedWriter = writerService.save(writer);
 
         assertNotNull(savedWriter);
         verify(writerRepository, times(1)).save(writer);
     }
 
     @Test
-    void testFindById() throws SQLException {
+    void testFindById() {
         Long id = 1L;
         Optional<Writer> writerOptional = Optional.of(Writer.builder().build());
         when(writerRepository.findById(id)).thenReturn(writerOptional);
@@ -49,7 +49,7 @@ public class WriterServiceImplTest {
     }
 
     @Test
-    void testFindAllWriters() throws SQLException {
+    void testFindAllWriters() {
         List<Writer> writersList = Arrays.asList(Writer.builder().build(), Writer.builder().build());
         when(writerRepository.findAll()).thenReturn(writersList);
 
@@ -61,7 +61,7 @@ public class WriterServiceImplTest {
     }
 
     @Test
-    void testUpdateWriter() throws SQLException {
+    void testUpdateWriter() {
         Writer writerToUpdate = Writer.builder().id(1L).build();
         Writer updatedWriter = Writer.builder().id(1L).build(); // Предполагается, что объект обновлен
         when(writerRepository.update(writerToUpdate)).thenReturn(Optional.of(updatedWriter));
@@ -74,7 +74,7 @@ public class WriterServiceImplTest {
     }
 
     @Test
-    void testDeleteWriterByIdSuccessfully() throws SQLException {
+    void testDeleteWriterByIdSuccessfully() {
         Long id = 1L;
         when(writerRepository.deleteById(id)).thenReturn(true);
 

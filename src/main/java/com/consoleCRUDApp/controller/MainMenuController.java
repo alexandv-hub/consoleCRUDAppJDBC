@@ -2,8 +2,6 @@ package com.consoleCRUDApp.controller;
 
 import com.consoleCRUDApp.ApplicationContext;
 
-import java.sql.SQLException;
-
 import static com.consoleCRUDApp.controller.EntityController.DEFAULT_RETURN_YOUR_INPUT_IS_NOT_A_COMMAND;
 
 public class MainMenuController implements BaseController {
@@ -24,7 +22,7 @@ public class MainMenuController implements BaseController {
     }
 
     @Override
-    public void executeMenuUserCommand(String inputCommand) throws SQLException {
+    public void executeMenuUserCommand(String inputCommand) {
         switch (inputCommand) {
             case SHOW_WRITER_MENU_COMMAND:
                 writerController.showMenu();

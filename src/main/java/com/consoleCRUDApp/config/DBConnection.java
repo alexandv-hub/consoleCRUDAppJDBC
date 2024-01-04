@@ -6,10 +6,23 @@ import java.sql.*;
 import java.util.Properties;
 
 public class DBConnection {
-    private static final Properties properties = new Properties();
+    private static Properties properties;
+    private static Connection connectionInstance;
 
     static {
         loadProperties();
+    }
+
+    private DBConnection() {
+
+    }
+
+    public static PreparedStatement getPreparedStatement(String sql) throws SQLException {
+       return getConnection().prepareStatement(sql);
+    }
+
+    public static PreparedStatement getPreparedStatement(String sql, int intConst) throws SQLException {
+       return getConnection().prepareStatement(sql, intConst);
     }
 
     private static void loadProperties() {
@@ -18,38 +31,38 @@ public class DBConnection {
                 System.out.println("Sorry, unable to find application.properties");
                 return;
             }
+            properties = new Properties();
             properties.load(input);
         } catch (IOException ex) {
             ex.printStackTrace(System.out);
         }
     }
 
-    public static Connection getConnection() throws SQLException {
-        String fullDatabaseUrl = properties.getProperty("database.url") + properties.getProperty("database.name");
-        return DriverManager.getConnection(fullDatabaseUrl, properties.getProperty("database.user"), properties.getProperty("database.password"));
+    static synchronized Connection getServerConnection() throws SQLException {
+        String serverUrl = properties.getProperty("database.url");
+        return DriverManager.getConnection(serverUrl, properties.getProperty("database.user"), properties.getProperty("database.password"));
     }
 
-    public static void createDbIfNotExist() {
-        System.out.println("Connecting to MySQL Server...");
-        try (Connection connection = DriverManager.getConnection(properties.getProperty("database.url"), properties.getProperty("database.user"), properties.getProperty("database.password"));
-             Statement statement = connection.createStatement()) {
-
-            ResultSet resultSet = statement.executeQuery("SHOW DATABASES;");
-            boolean dbExists = false;
-            while (resultSet.next()) {
-                if (properties.getProperty("database.name").equals(resultSet.getString(1))) {
-                    dbExists = true;
-                    break;
-                }
-            }
-
-            if (!dbExists) {
-                System.out.println("Creating database...");
-                statement.executeUpdate("CREATE DATABASE " + properties.getProperty("database.name"));
-                System.out.println("Database successfully created...");
-            }
-        } catch (SQLException e) {
-            System.out.println("Database creation failed: " + e.getMessage());
+    public static synchronized Connection getConnection() throws SQLException {
+        if (connectionInstance == null || connectionInstance.isClosed()) {
+            String fullDatabaseUrl = properties.getProperty("database.url") + properties.getProperty("database.name");
+            connectionInstance = DriverManager.getConnection(fullDatabaseUrl, properties.getProperty("database.user"), properties.getProperty("database.password"));
         }
+        return connectionInstance;
+    }
+
+    public static synchronized Connection getConnectionNoAutoCommit() throws SQLException {
+        if (connectionInstance == null || connectionInstance.isClosed()) {
+            connectionInstance = getConnection();
+        }
+        connectionInstance.setAutoCommit(false);
+        return connectionInstance;
+    }
+
+    static synchronized Properties getProperties() {
+        if (properties == null) {
+            properties = new Properties();
+        }
+        return properties;
     }
 }

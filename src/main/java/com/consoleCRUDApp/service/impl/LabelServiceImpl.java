@@ -1,10 +1,10 @@
-package com.consoleCRUDApp.service;
+package com.consoleCRUDApp.service.impl;
 
 import com.consoleCRUDApp.model.Label;
 import com.consoleCRUDApp.repository.LabelRepository;
+import com.consoleCRUDApp.service.LabelService;
 import lombok.AllArgsConstructor;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,37 +14,32 @@ public class LabelServiceImpl implements LabelService {
     private final LabelRepository labelRepository;
 
     @Override
-    public Label save(Label label) throws SQLException {
+    public Optional<Label> save(Label label) {
         return labelRepository.save(label);
     }
 
     @Override
-    public Optional<Label> findById(Long id) throws SQLException {
+    public Optional<Label> findById(Long id) {
         return labelRepository.findById(id);
     }
 
     @Override
-    public List<Label> findAll() throws SQLException {
+    public List<Label> findAll() {
         return labelRepository.findAll();
     }
 
     @Override
-    public Optional<Label> update(Label label) throws SQLException {
+    public Optional<Label> update(Label label) {
         return labelRepository.update(label);
     }
 
     @Override
-    public boolean deleteById(Long id) throws SQLException {
+    public boolean deleteById(Long id) {
         return labelRepository.deleteById(id);
     }
 
     @Override
-    public Class<Label> getEntityClass() {
-        return labelRepository.getEntityClass();
-    }
-
-    @Override
-    public boolean isLabelExistInRepository(Label label) throws SQLException {
+    public boolean isLabelExistInRepository(Label label) {
         return labelRepository.isLabelExistInRepository(label);
     }
 

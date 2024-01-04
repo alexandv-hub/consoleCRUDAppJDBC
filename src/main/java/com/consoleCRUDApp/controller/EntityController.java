@@ -1,7 +1,5 @@
 package com.consoleCRUDApp.controller;
 
-import java.sql.SQLException;
-
 public interface EntityController extends BaseController {
 
     String CREATE_NEW_ENTITY_COMMAND = "1";
@@ -14,15 +12,15 @@ public interface EntityController extends BaseController {
 
     String getEntityClassName();
 
-    void showMenu() throws SQLException;
-    void createAndSaveNewEntity() throws SQLException;
-    void findEntityById() throws SQLException;
-    void showAllActiveEntities() throws SQLException;
-    void updateEntity() throws SQLException;
-    void deleteEntityById() throws SQLException;
+    void showMenu();
+    void createAndSaveNewEntity();
+    void findEntityById();
+    void showAllActiveEntities();
+    void updateEntity();
+    void deleteEntityById();
 
     @Override
-    default void executeMenuUserCommand(String inputCommand) throws SQLException {
+    default void executeMenuUserCommand(String inputCommand) {
         switch (inputCommand) {
             case CREATE_NEW_ENTITY_COMMAND:
                 createAndSaveNewEntity();
