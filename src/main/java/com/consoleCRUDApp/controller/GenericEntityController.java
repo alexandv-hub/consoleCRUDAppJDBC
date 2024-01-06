@@ -1,6 +1,7 @@
 package com.consoleCRUDApp.controller;
 
-import com.consoleCRUDApp.model.Entity;
+import com.consoleCRUDApp.model.DBEntity;
+import com.consoleCRUDApp.model.Status;
 import com.consoleCRUDApp.service.GenericEntityService;
 import com.consoleCRUDApp.view.BaseEntityView;
 import lombok.AllArgsConstructor;
@@ -9,10 +10,14 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 @AllArgsConstructor
-public abstract class GenericEntityController<T extends Entity,
+public abstract class GenericEntityController<T extends DBEntity,
                                               S extends GenericEntityService<T>,
                                               V extends BaseEntityView>
                                     implements EntityController {
+
+    static final String CREATE = "CREATE";
+    static final String UPDATE = "UPDATE";
+    static final String DELETE = "DELETE";
 
     protected final S service;
     protected final V baseEntityView;
@@ -29,126 +34,131 @@ public abstract class GenericEntityController<T extends Entity,
 
     @Override
     public void createAndSaveNewEntity() {
-        baseEntityView.showInConsole("Starting CREATE new entity...");
-        String createOperationName = "CREATE";
+        baseEntityView.showInConsole("\nStarting " + CREATE + " new " + getEntityName() + " entity...\n");
 
         T entity = prepareNewEntity();
 
-        String entityClassSimpleName = entity.getClass().getSimpleName();
-
-        showInfoMessageYouAreAboutTo(createOperationName, entityClassSimpleName, entity);
+        showInfoMessageYouAreAboutTo(CREATE, getEntityName(), entity);
         if (baseEntityView.userConfirmsOperation()) {
-            saveNewEntity(entity, createOperationName);
+            saveNewEntity(entity, CREATE);
         } else {
-            showInfoMessageOperationCancelled(createOperationName, entityClassSimpleName);
+            showInfoMessageOperationCancelled(CREATE, getEntityName());
         }
+        baseEntityView.showConsoleEntityMenu(getEntityName());
     }
 
     @Override
     public void findEntityById() {
-        baseEntityView.showInConsole("Starting find entity by ID...");
+        baseEntityView.showInConsole("Starting find " + getEntityName() + " entity by ID...\n");
+
         Long id = baseEntityView.promptEntityIdFromUser();
+
         service.findById(id).ifPresentOrElse(
                 entity -> {
-                    baseEntityView.printlnToConsole("\nFound " + getEntityClassName() + " entity:");
+                    baseEntityView.printlnToConsole("\nFound " + getEntityName() + " entity:");
                     showEntitiesListFormatted(List.of(entity));
                 },
                 () -> showInfoMessageEntityWithIdNotFound(id)
         );
+        baseEntityView.showConsoleEntityMenu(getEntityName());
     }
 
     @Override
     public void showAllActiveEntities() {
-        baseEntityView.showInConsole("Starting show all entities...");
+        baseEntityView.showInConsole("\nStarting show all " + getEntityName() + " entities...\n");
+
         List<T> activeEntities = service.findAll();
 
         if (!activeEntities.isEmpty()) {
-            baseEntityView.printlnToConsole("\nFound " + activeEntities.size() + " entities.");
-            baseEntityView.printlnToConsole(
-                    "All entities: ");
+            baseEntityView.printlnToConsole("\nFound " + activeEntities.size() + " " + getEntityName() + " records.");
+            baseEntityView.printlnToConsole("All " + getEntityName() + " entities: ");
             showEntitiesListFormatted(activeEntities);
         } else {
-            baseEntityView.showInConsole("\nNo entities found!");
+            baseEntityView.showInConsole("\nNo " + getEntityName() + " entities found!");
         }
+        baseEntityView.showConsoleEntityMenu(getEntityName());
     }
 
     @Override
     public void updateEntity() {
-        baseEntityView.showInConsole("Starting UPDATE entity by ID...");
+        baseEntityView.showInConsole("Starting " + UPDATE + " " + getEntityName() + " entity by ID...\n");
+
         Long id = baseEntityView.promptEntityIdFromUser();
+
         service.findById(id).ifPresentOrElse(
                 entity -> processEntityUpdate(entity),
                 () -> showInfoMessageEntityWithIdNotFound(id)
         );
+        baseEntityView.showConsoleEntityMenu(getEntityName());
     }
 
-    private void processEntityUpdate(T entity) {
-        String updateOperationName = "UPDATE";
-        String entityClassSimpleName = entity.getClass().getSimpleName();
+    void processEntityUpdate(T entity) {
 
-        showInfoMessageYouAreAboutTo(updateOperationName, entityClassSimpleName, entity);
+        showInfoMessageYouAreAboutTo(UPDATE, getEntityName(), entity);
         if (baseEntityView.userConfirmsOperation()) {
             T updatedEntity = requestEntityUpdatesFromUser(entity.getId());
+            updatedEntity.setStatus(Status.ACTIVE);
 
             service.update(updatedEntity);
 
-            showInfoMessageEntityOperationFinishedSuccessfully(updateOperationName, entity.getId());
+            showInfoMessageEntityOperationFinishedSuccessfully(UPDATE, getEntityName(), entity.getId());
         } else {
-            showInfoMessageOperationCancelled(updateOperationName, entityClassSimpleName);
+            showInfoMessageOperationCancelled(UPDATE, getEntityName());
         }
     }
 
     @Override
     public void deleteEntityById() {
-        baseEntityView.showInConsole("Starting DELETE entity by ID...");
+        baseEntityView.showInConsole("Starting " + DELETE + " " + getEntityName() + " entity by ID...\n");
+
         Long id = baseEntityView.promptEntityIdFromUser();
+
         service.findById(id).ifPresentOrElse(
                 entity -> processEntityDeletion(entity, id),
                 () -> showInfoMessageEntityWithIdNotFound(id)
         );
+        baseEntityView.showConsoleEntityMenu(getEntityName());
     }
 
     private void processEntityDeletion(T entity, Long id) {
-        String operationName = "DELETE";
-        String entityClassSimpleName = entity.getClass().getSimpleName();
-        baseEntityView.outputYouAreAboutTo(operationName, entityClassSimpleName, entity);
-
+        baseEntityView.outputYouAreAboutTo(DELETE, getEntityName(), entity);
         if (baseEntityView.userConfirmsOperation()) {
-            deleteEntity(operationName, id);
+            deleteEntity(id);
         } else {
-            showInfoMessageOperationCancelled(operationName, entityClassSimpleName);
+            showInfoMessageOperationCancelled(DELETE, getEntityName());
         }
     }
 
-    private void deleteEntity(String operationName, Long id) {
+    private void deleteEntity(Long id) {
         try {
             service.deleteById(id);
-            showInfoMessageEntityOperationFinishedSuccessfully(operationName, id);
+            showInfoMessageEntityOperationFinishedSuccessfully(DELETE, getEntityName(), id);
         } catch (NoSuchElementException e) {
             System.out.println("\n>>> ERROR: ");
+            e.printStackTrace(System.out);
         }
     }
 
     @Override
     public void exit() {
-        baseEntityView.outputExitedFromMainMenu(getEntityClassName());
+        baseEntityView.outputExitedFromMainMenu(getEntityName());
     }
 
 
     private void showInfoMessageEntityWithIdNotFound(Long id) {
-        baseEntityView.outputEntityWithIdNotFound(id);
+        baseEntityView.outputEntityWithIdNotFound(getEntityName(), id);
     }
 
-    void showInfoMessageOperationCancelled(String currOperationName, String entityClassSimpleName) {
-        baseEntityView.outputEntityOperationCancelled(currOperationName, entityClassSimpleName);
+    void showInfoMessageOperationCancelled(String currOperationName, String entityName) {
+        baseEntityView.outputEntityOperationCancelled(currOperationName, entityName);
     }
 
-    private void showInfoMessageYouAreAboutTo(String operationName, String entityClassName, Entity entity) {
-        baseEntityView.outputYouAreAboutTo(operationName, entityClassName, entity);
+    void showInfoMessageYouAreAboutTo(String operationName, String entityName, DBEntity entity) {
+        baseEntityView.outputYouAreAboutTo(operationName, entityName, entity);
     }
 
-    void showInfoMessageEntityOperationFinishedSuccessfully(String operationName, Long id) {
-        baseEntityView.outputEntityOperationFinishedSuccessfully(operationName, id);
+    void showInfoMessageEntityOperationFinishedSuccessfully(String operationName, String entityName, Long id) {
+        baseEntityView.outputEntityOperationFinishedSuccessfully(operationName,entityName, id);
     }
 }
 

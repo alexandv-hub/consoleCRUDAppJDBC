@@ -2,7 +2,7 @@ package com.consoleCRUDApp.view;
 
 import com.consoleCRUDApp.ApplicationContext;
 import com.consoleCRUDApp.controller.PostController;
-import com.consoleCRUDApp.model.Entity;
+import com.consoleCRUDApp.model.DBEntity;
 import com.consoleCRUDApp.model.Label;
 import com.consoleCRUDApp.model.Post;
 import com.github.freva.asciitable.AsciiTable;
@@ -19,6 +19,12 @@ import static com.consoleCRUDApp.controller.EntityController.GO_BACK_TO_MAIN_MEN
 
 public class PostView extends BaseEntityView {
 
+    private static final DateTimeFormatter DATE_FORMATTER;
+    static {
+        String dateTimePattern = "yyyy-MM-dd HH:mm:ss";
+        DATE_FORMATTER = DateTimeFormatter.ofPattern(dateTimePattern);
+    }
+
     private PostController postController;
 
     private void ensureControllerIsInitialized() {
@@ -31,7 +37,7 @@ public class PostView extends BaseEntityView {
     public void startMenu() {
         ensureControllerIsInitialized();
 
-        showConsoleEntityMenu(postController.getEntityClassName());
+        showConsoleEntityMenu(postController.getEntityName());
 
         String inputCommand = getUserInputCommand();
         while (!inputCommand.equals(GO_BACK_TO_MAIN_MENU_COMMAND)) {
@@ -42,10 +48,8 @@ public class PostView extends BaseEntityView {
         showConsoleMainMenu();
     }
 
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
     @Override
-    public String toStringTableViewWithIds(Entity post) {
+    public String toStringTableViewWithIds(DBEntity post) {
         Character[] borderStyle = AsciiTable.FANCY_ASCII;
         List<ColumnData<Post>> columns = getColumnDataWithIds();
         List<Post> posts = List.of((Post) post);
@@ -53,14 +57,14 @@ public class PostView extends BaseEntityView {
     }
 
     @Override
-    public String toStringTableViewEntityNoIds(Entity post) {
+    public String toStringTableViewEntityNoIds(DBEntity post) {
         Character[] borderStyle = AsciiTable.FANCY_ASCII;
         List<ColumnData<Post>> columns = getColumnDataNoIds();
         List<Post> posts = List.of((Post) post);
         return "\n" + AsciiTable.getTable(borderStyle, posts, columns);
     }
 
-    public List<ColumnData<Post>> getColumnDataWithIds() {
+    public static List<ColumnData<Post>> getColumnDataWithIds() {
         return Arrays.asList(
                 new Column().header("ID")
                         .headerAlign(HorizontalAlign.CENTER)
@@ -88,7 +92,14 @@ public class PostView extends BaseEntityView {
                         .with(post -> {
                             if (post.getLabels() != null) {
                                 return post.getLabels().stream()
-                                        .map(label -> label.getName() + "(" + label.getId().toString()+")")
+                                        .map(label -> {
+                                            Long labelId = label.getId();
+                                            if (labelId != null) {
+                                                return label.getName() + "(" + labelId + ")";
+                                            } else {
+                                                return label.getName() + "()";
+                                            }
+                                        })
                                         .collect(Collectors.joining(", "));
                             }
                             return "";

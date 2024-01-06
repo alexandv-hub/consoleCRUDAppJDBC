@@ -10,13 +10,17 @@ import com.github.freva.asciitable.AsciiTable;
 import com.github.freva.asciitable.ColumnData;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public class PostController
         extends GenericEntityController<Post, PostServiceImpl, PostView>
-        implements LabelNamesInputDialog {
+        implements LabelNamesInputDialog, PostCreateInputDialog {
+
+    private static final String POST_ENTITY_NAME = "POST";
+
+    private static final String INPUT_THE_NEW_POST_CONTENT = "\nPlease input the new Post Content: ";
+    private static final String SAVE_NEW_POST_OPERATION_FAILED = "\nSave new Post operation failed!!!\n";
 
     private final PostView postView = baseEntityView;
 
@@ -27,13 +31,12 @@ public class PostController
 
     @Override
     public Post prepareNewEntity() {
-        String newPostContent = postView.getUserInput("\nPlease input the new Post Content: ");
+        String newPostContent = postView.getUserInputNotEmpty(INPUT_THE_NEW_POST_CONTENT);
 
         List<Label> newPostLabels = promptPostLabelsNamesFromUser(postView);
 
         return Post.builder()
                 .content(newPostContent)
-                .created(LocalDateTime.now())
                 .labels(newPostLabels)
                 .postStatus(PostStatus.UNDER_REVIEW)
                 .status(Status.ACTIVE)
@@ -42,55 +45,22 @@ public class PostController
 
     @Override
     public void saveNewEntity(Post newPostToSave, String operationName) {
+        newPostToSave.setCreated(LocalDateTime.now());
+
         Optional<Post> savedPostOptional = service.save(newPostToSave);
         if (savedPostOptional.isPresent()) {
             if (service.findById(savedPostOptional.get().getId()).isPresent()) {
-                showInfoMessageEntityOperationFinishedSuccessfully(operationName, newPostToSave.getId());
+                showInfoMessageEntityOperationFinishedSuccessfully(operationName, getEntityName(), newPostToSave.getId());
             }
         } else {
-            postView.showInConsole("\nSave new Post operation failed!!!\n");
+            postView.showInConsole(SAVE_NEW_POST_OPERATION_FAILED);
             showMenu();
         }
     }
 
     @Override
-    public Post requestEntityUpdatesFromUser(Long id) {
-        String updatedPostContent = postView.getUserInput("\nPlease input the Post new Content: ");
-
-        int updatedPostStatus = 0;
-        boolean validInput = false;
-        while (!validInput) {
-            try {
-                updatedPostStatus = Integer.parseInt(postView.getUserInput("\nPlease input the Post new PostStatus ('1'-ACTIVE, '2'-UNDER_REVIEW): "));
-                if (updatedPostStatus == 1 || updatedPostStatus == 2) {
-                    validInput = true;
-                } else {
-                    postView.showInConsole("\nIncorrect input! The status must be '1' for ACTIVE or '2' for UNDER_REVIEW.");
-                }
-            } catch (NumberFormatException e) {
-                postView.showInConsole("\nIncorrect input! Please input a numeric value.");
-            }
-        }
-
-        List<Label> updatedLabelList = new ArrayList<>();
-        postView.showInConsole("Would you like to UPDATE the Post labels?");
-        if (postView.userConfirmsOperation()) {
-            updatedLabelList = promptPostLabelsNamesFromUser(postView);
-        } else {
-            Optional<Post> postOptional = service.findById(id);
-            if (postOptional.isPresent()) {
-                Post post = postOptional.get();
-                updatedLabelList = post.getLabels();
-            }
-        }
-
-        return Post.builder()
-                .id(id)
-                .content(updatedPostContent)
-                .labels(updatedLabelList)
-                .postStatus(updatedPostStatus == 1 ? PostStatus.ACTIVE : PostStatus.UNDER_REVIEW )
-                .status(Status.ACTIVE)
-                .build();
+    public Post requestEntityUpdatesFromUser(Long postId) {
+        return promptUpdatePostById(postId, postView);
     }
 
     @Override
@@ -102,8 +72,7 @@ public class PostController
     }
 
     @Override
-    public String getEntityClassName() {
-        return "POST";
+    public String getEntityName() {
+        return POST_ENTITY_NAME;
     }
-
 }

@@ -11,7 +11,12 @@ import java.util.List;
 import java.util.Optional;
 
 public class LabelController
-                        extends GenericEntityController<Label, LabelServiceImpl, LabelView> {
+        extends GenericEntityController<Label, LabelServiceImpl, LabelView> {
+
+    private static final String LABEL_ENTITY_NAME = "LABEL";
+
+    private static final String SAVE_NEW_LABEL_OPERATION_FAILED = "\nSave new Label operation failed!!!\n";
+    private static final String PLEASE_INPUT_THE_LABEL_NEW_NAME = "\nPlease input the Label new Name: ";
 
     private final LabelView labelView = baseEntityView;
 
@@ -33,21 +38,25 @@ public class LabelController
     public void saveNewEntity(Label newLabelToSave, String operationName) {
         if (!service.isLabelExistInRepository(newLabelToSave)) {
             Optional<Label> savedLabel = service.save(newLabelToSave);
-            if (service.findById(savedLabel.get().getId()).isPresent()) {
-                showInfoMessageEntityOperationFinishedSuccessfully(operationName, savedLabel.get().getId());
-            } else {
-                labelView.showInConsole("\nSave new Label operation failed!!!\n");
-                showMenu();
-            }
+            savedLabel.ifPresentOrElse(
+                    label -> showInfoMessageEntityOperationFinishedSuccessfully(operationName, getEntityName(), label.getId()),
+                    () -> {
+                        labelView.showInConsole(SAVE_NEW_LABEL_OPERATION_FAILED);
+                        showMenu();
+                    }
+            );
         }
         else {
-            labelView.outputMessageEntityAlreadyExists("LABEL", "Name", newLabelToSave.getName());
+            labelView.outputMessageEntityAlreadyExists(
+                    getEntityName(),
+                    "Name",
+                    newLabelToSave.getName());
         }
     }
 
     @Override
     public Label requestEntityUpdatesFromUser(Long id) {
-        String updatedLabelName = labelView.getUserInput("Please input the Label new Name: ");
+        String updatedLabelName = labelView.getUserInputNotEmpty(PLEASE_INPUT_THE_LABEL_NEW_NAME);
 
         return Label.builder()
                 .id(id)
@@ -64,7 +73,7 @@ public class LabelController
     }
 
     @Override
-    public String getEntityClassName() {
-        return "LABEL";
+    public String getEntityName() {
+        return LABEL_ENTITY_NAME;
     }
 }

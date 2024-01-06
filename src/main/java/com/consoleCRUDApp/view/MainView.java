@@ -8,10 +8,12 @@ import static com.consoleCRUDApp.controller.MainMenuController.EXIT_APP_NUM_COMM
 public class MainView implements BaseView {
 
     private static final String EXIT_APP_STR_COMMAND = "exit";
+    private static final String WELCOME_TO_THE_CONSOLE_CRUD_APPLICATION = "\nWelcome to the console CRUD Application!";
+    private static final String CONSOLE_CRUD_APPLICATION_TERMINATED_SUCCESSFULLY = "Console CRUD Application terminated successfully.";
 
     public void runMainMenu(ApplicationContext context) {
         System.out.println(
-                "\nWelcome to the console CRUD Application!");
+                WELCOME_TO_THE_CONSOLE_CRUD_APPLICATION);
 
         MainMenuController mainMenuController = new MainMenuController(context);
 
@@ -25,7 +27,6 @@ public class MainView implements BaseView {
 
         mainMenuController.exit();
         close();
-        showInConsole("Console CRUD Application terminated successfully.");
+        showInConsole(CONSOLE_CRUD_APPLICATION_TERMINATED_SUCCESSFULLY);
     }
-
 }

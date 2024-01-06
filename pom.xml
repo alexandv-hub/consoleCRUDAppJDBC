@@ -19,7 +19,10 @@
         <mysql-connector-j.version>8.2.0</mysql-connector-j.version>
         <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
         <junit-jupiter.version>5.10.0</junit-jupiter.version>
-        <liquibase-core.version>4.25.1</liquibase-core.version>
+        <flyway-core.version>10.4.1</flyway-core.version>
+        <flyway-mysql.version>10.4.1</flyway-mysql.version>
+        <hibernate-core.version>6.4.1.Final</hibernate-core.version>
+        <hibernate-orm-core.version>6.2.7.Final</hibernate-orm-core.version>
     </properties>
     <dependencies>
         <dependency>
@@ -57,9 +60,25 @@
             <version>${mysql-connector-j.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.liquibase</groupId>
-            <artifactId>liquibase-core</artifactId>
-            <version>${liquibase-core.version}</version>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <version>${flyway-core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-mysql</artifactId>
+            <version>${flyway-mysql.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>${hibernate-core.version}</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>${hibernate-orm-core.version}</version>
         </dependency>
     </dependencies>
 

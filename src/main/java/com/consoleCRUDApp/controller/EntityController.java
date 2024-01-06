@@ -8,10 +8,9 @@ public interface EntityController extends BaseController {
     String UPDATE_EXISTING_ENTITY_COMMAND = "4";
     String DELETE_EXISTING_ENTITY_COMMAND = "5";
     String GO_BACK_TO_MAIN_MENU_COMMAND = "6";
-    String DEFAULT_RETURN_YOUR_INPUT_IS_NOT_A_COMMAND = "default return: your input is not a command";
+    String DEFAULT_RETURN_YOUR_INPUT_IS_NOT_A_COMMAND = "default return: your input is not a command\n";
 
-    String getEntityClassName();
-
+    String getEntityName();
     void showMenu();
     void createAndSaveNewEntity();
     void findEntityById();
@@ -44,5 +43,4 @@ public interface EntityController extends BaseController {
                 MAIN_VIEW.showInConsole(DEFAULT_RETURN_YOUR_INPUT_IS_NOT_A_COMMAND);
         }
     }
-
 }

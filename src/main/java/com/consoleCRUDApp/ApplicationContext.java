@@ -6,9 +6,9 @@ import com.consoleCRUDApp.controller.WriterController;
 import com.consoleCRUDApp.repository.LabelRepository;
 import com.consoleCRUDApp.repository.PostRepository;
 import com.consoleCRUDApp.repository.WriterRepository;
-import com.consoleCRUDApp.repository.jdbc.JdbcLabelRepositoryImpl;
-import com.consoleCRUDApp.repository.jdbc.JdbcPostRepositoryImpl;
-import com.consoleCRUDApp.repository.jdbc.JdbcWriterRepositoryImpl;
+import com.consoleCRUDApp.repository.hibernate.HibLabelRepositoryImpl;
+import com.consoleCRUDApp.repository.hibernate.HibPostRepositoryImpl;
+import com.consoleCRUDApp.repository.hibernate.HibWriterRepositoryImpl;
 import com.consoleCRUDApp.service.impl.LabelServiceImpl;
 import com.consoleCRUDApp.service.impl.PostServiceImpl;
 import com.consoleCRUDApp.service.impl.WriterServiceImpl;
@@ -47,9 +47,9 @@ public class ApplicationContext {
         WriterController writerController = null;
 
         try {
-            LabelRepository labelRepository = new JdbcLabelRepositoryImpl();
-            PostRepository postRepository = new JdbcPostRepositoryImpl(labelRepository);
-            WriterRepository writerRepository = new JdbcWriterRepositoryImpl(postRepository, labelRepository);
+            LabelRepository labelRepository = new HibLabelRepositoryImpl();
+            PostRepository postRepository = new HibPostRepositoryImpl(labelRepository);
+            WriterRepository writerRepository = new HibWriterRepositoryImpl(postRepository);
 
             LabelServiceImpl labelService = new LabelServiceImpl(labelRepository);
             PostServiceImpl postService = new PostServiceImpl(postRepository);

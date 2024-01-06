@@ -1,6 +1,6 @@
 package com.consoleCRUDApp.model;
 
-public interface Entity {
+public interface DBEntity {
 
     Long getId();
     void setId(Long nextId);

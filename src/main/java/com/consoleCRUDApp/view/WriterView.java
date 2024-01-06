@@ -2,7 +2,7 @@ package com.consoleCRUDApp.view;
 
 import com.consoleCRUDApp.ApplicationContext;
 import com.consoleCRUDApp.controller.WriterController;
-import com.consoleCRUDApp.model.Entity;
+import com.consoleCRUDApp.model.DBEntity;
 import com.consoleCRUDApp.model.Post;
 import com.consoleCRUDApp.model.Writer;
 import com.github.freva.asciitable.AsciiTable;
@@ -30,7 +30,7 @@ public class WriterView extends BaseEntityView {
     public void startMenu() {
         ensureControllerIsInitialized();
 
-        showConsoleEntityMenu(writerController.getEntityClassName());
+        showConsoleEntityMenu(writerController.getEntityName());
 
         String inputCommand = getUserInputCommand();
         while (!inputCommand.equals(GO_BACK_TO_MAIN_MENU_COMMAND)) {
@@ -42,7 +42,7 @@ public class WriterView extends BaseEntityView {
     }
 
     @Override
-    public String toStringTableViewWithIds(Entity writer) {
+    public String toStringTableViewWithIds(DBEntity writer) {
         Character[] borderStyle = AsciiTable.FANCY_ASCII;
         List<ColumnData<Writer>> columns = getColumnDataWithIds();
         List<Writer> writers = List.of((Writer) writer);
@@ -50,11 +50,18 @@ public class WriterView extends BaseEntityView {
     }
 
     @Override
-    public String toStringTableViewEntityNoIds(Entity writer) {
+    public String toStringTableViewEntityNoIds(DBEntity writer) {
         Character[] borderStyle = AsciiTable.FANCY_ASCII;
         List<ColumnData<Writer>> columns = getColumnDataNoIds();
         List<Writer> writers = List.of((Writer) writer);
         return "\n" + AsciiTable.getTable(borderStyle, writers, columns);
+    }
+
+    public void showWriterPostsFormatted(List<Post> postList) {
+        showInConsole("\nWriter posts: ");
+        Character[] borderStyle = AsciiTable.FANCY_ASCII;
+        List<ColumnData<Post>> columns = PostView.getColumnDataWithIds();
+        showInConsole("\n" + AsciiTable.getTable(borderStyle, postList, columns) + "\n");
     }
 
     public List<ColumnData<Writer>> getColumnDataWithIds() {
@@ -116,4 +123,5 @@ public class WriterView extends BaseEntityView {
                         })
         );
     }
+
 }

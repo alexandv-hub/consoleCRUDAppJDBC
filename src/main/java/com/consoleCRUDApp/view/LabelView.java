@@ -2,7 +2,7 @@ package com.consoleCRUDApp.view;
 
 import com.consoleCRUDApp.ApplicationContext;
 import com.consoleCRUDApp.controller.LabelController;
-import com.consoleCRUDApp.model.Entity;
+import com.consoleCRUDApp.model.DBEntity;
 import com.consoleCRUDApp.model.Label;
 import com.github.freva.asciitable.AsciiTable;
 import com.github.freva.asciitable.Column;
@@ -16,6 +16,7 @@ import static com.consoleCRUDApp.controller.EntityController.GO_BACK_TO_MAIN_MEN
 
 public class LabelView extends BaseEntityView {
 
+    private static final String PLEASE_INPUT_NEW_LABEL_NAME = "\nPlease input new Label Name: ";
     private LabelController labelController;
 
     private void ensureControllerIsInitialized() {
@@ -28,7 +29,7 @@ public class LabelView extends BaseEntityView {
     public void startMenu() {
         ensureControllerIsInitialized();
 
-        showConsoleEntityMenu(labelController.getEntityClassName());
+        showConsoleEntityMenu(labelController.getEntityName());
 
         String inputCommand = getUserInputCommand();
         while (!inputCommand.equals(GO_BACK_TO_MAIN_MENU_COMMAND)) {
@@ -40,12 +41,12 @@ public class LabelView extends BaseEntityView {
     }
 
     public String promptNewLabelNameFromUser() {
-        return getUserInput("\nPlease input new Label Name: ");
+        return getUserInputNotEmpty(PLEASE_INPUT_NEW_LABEL_NAME);
     }
 
 
     @Override
-    public String toStringTableViewWithIds(Entity label) {
+    public String toStringTableViewWithIds(DBEntity label) {
         Character[] borderStyle = AsciiTable.FANCY_ASCII;
         List<ColumnData<Label>> columns = getColumnDataWithIds();
         List<Label> labels = List.of((Label) label);
@@ -53,7 +54,7 @@ public class LabelView extends BaseEntityView {
     }
 
     @Override
-    public String toStringTableViewEntityNoIds(Entity label) {
+    public String toStringTableViewEntityNoIds(DBEntity label) {
         Character[] borderStyle = AsciiTable.FANCY_ASCII;
         List<ColumnData<Label>> columns = getColumnDataNoIds();
         List<Label> labels = List.of((Label) label);
@@ -83,5 +84,4 @@ public class LabelView extends BaseEntityView {
                         .with(Label::getName)
         );
     }
-
 }
