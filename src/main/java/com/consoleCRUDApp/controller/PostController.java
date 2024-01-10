@@ -13,14 +13,14 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static com.consoleCRUDApp.view.messages.ErrorMessages.Entity.SAVE_NEW_POST_OPERATION_FAILED;
+import static com.consoleCRUDApp.view.messages.SystemMessages.Entity.INPUT_THE_NEW_POST_CONTENT;
+
 public class PostController
         extends GenericEntityController<Post, PostServiceImpl, PostView>
         implements LabelNamesInputDialog, PostCreateInputDialog {
 
     private static final String POST_ENTITY_NAME = "POST";
-
-    private static final String INPUT_THE_NEW_POST_CONTENT = "\nPlease input the new Post Content: ";
-    private static final String SAVE_NEW_POST_OPERATION_FAILED = "\nSave new Post operation failed!!!\n";
 
     private final PostView postView = baseEntityView;
 
@@ -44,13 +44,13 @@ public class PostController
     }
 
     @Override
-    public void saveNewEntity(Post newPostToSave, String operationName) {
+    public void saveNewEntity(Post newPostToSave) {
         newPostToSave.setCreated(LocalDateTime.now());
 
         Optional<Post> savedPostOptional = service.save(newPostToSave);
         if (savedPostOptional.isPresent()) {
             if (service.findById(savedPostOptional.get().getId()).isPresent()) {
-                showInfoMessageEntityOperationFinishedSuccessfully(operationName, getEntityName(), newPostToSave.getId());
+                showInfoMessageEntityOperationFinishedSuccessfully(SAVE, getEntityName(), newPostToSave.getId());
             }
         } else {
             postView.showInConsole(SAVE_NEW_POST_OPERATION_FAILED);

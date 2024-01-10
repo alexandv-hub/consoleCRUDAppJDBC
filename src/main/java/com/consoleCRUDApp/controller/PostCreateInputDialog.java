@@ -12,16 +12,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.consoleCRUDApp.view.BaseView.INVALID_INPUT_PLEASE_ENTER_A_NUMERIC_VALUE;
+import static com.consoleCRUDApp.view.messages.ErrorMessages.Entity.INCORRECT_INPUT_THE_STATUS_MUST_BE_1_FOR_ACTIVE_OR_2_FOR_UNDER_REVIEW;
+import static com.consoleCRUDApp.view.messages.ErrorMessages.Inputs.INVALID_INPUT_PLEASE_ENTER_A_NUMERIC_VALUE;
+import static com.consoleCRUDApp.view.messages.SystemMessages.Entity.*;
 
 public interface PostCreateInputDialog extends LabelNamesInputDialog {
 
-    String WOULD_YOU_LIKE_TO_UPDATE_THE_POST_LABELS = "\nWould you like to UPDATE the Post labels?";
-    String PLEASE_INPUT_THE_POST_NEW_POST_STATUS_1_ACTIVE_2_UNDER_REVIEW = "\nPlease input the Post new PostStatus ('1'-ACTIVE, '2'-UNDER_REVIEW): ";
-    String INCORRECT_INPUT_THE_STATUS_MUST_BE_1_FOR_ACTIVE_OR_2_FOR_UNDER_REVIEW = "\nIncorrect input! The status must be '1' for ACTIVE or '2' for UNDER_REVIEW.";
-
     default Post promptUpdatePostById(Long postId, BaseEntityView baseEntityView) {
-        String updatedPostContent = baseEntityView.getUserInputNotEmpty("\nPlease input the Post new Content: ");
+        String updatedPostContent = baseEntityView.getUserInputNotEmpty(PLEASE_INPUT_THE_POST_NEW_CONTENT);
 
         int updatedPostStatus = 0;
         boolean validInput = false;

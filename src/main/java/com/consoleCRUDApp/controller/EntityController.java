@@ -1,5 +1,7 @@
 package com.consoleCRUDApp.controller;
 
+import static com.consoleCRUDApp.view.messages.ErrorMessages.Inputs.DEFAULT_RETURN_YOUR_INPUT_IS_NOT_A_COMMAND;
+
 public interface EntityController extends BaseController {
 
     String CREATE_NEW_ENTITY_COMMAND = "1";
@@ -8,7 +10,6 @@ public interface EntityController extends BaseController {
     String UPDATE_EXISTING_ENTITY_COMMAND = "4";
     String DELETE_EXISTING_ENTITY_COMMAND = "5";
     String GO_BACK_TO_MAIN_MENU_COMMAND = "6";
-    String DEFAULT_RETURN_YOUR_INPUT_IS_NOT_A_COMMAND = "default return: your input is not a command\n";
 
     String getEntityName();
     void showMenu();

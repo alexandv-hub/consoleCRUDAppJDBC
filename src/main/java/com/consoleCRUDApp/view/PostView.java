@@ -21,7 +21,7 @@ public class PostView extends BaseEntityView {
 
     private static final DateTimeFormatter DATE_FORMATTER;
     static {
-        String dateTimePattern = "yyyy-MM-dd HH:mm:ss";
+        final String dateTimePattern = "yyyy-MM-dd HH:mm:ss";
         DATE_FORMATTER = DateTimeFormatter.ofPattern(dateTimePattern);
     }
 

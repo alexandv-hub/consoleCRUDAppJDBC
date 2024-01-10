@@ -16,16 +16,17 @@ public abstract class GenericEntityController<T extends DBEntity,
                                     implements EntityController {
 
     static final String CREATE = "CREATE";
+    static final String SAVE = "SAVE";
     static final String UPDATE = "UPDATE";
     static final String DELETE = "DELETE";
 
     protected final S service;
     protected final V baseEntityView;
 
-    public abstract void showEntitiesListFormatted(List<T> activeEntities);
-    public abstract void saveNewEntity(T entity, String operationName);
-    public abstract T prepareNewEntity();
-    public abstract T requestEntityUpdatesFromUser(Long id);
+    abstract void showEntitiesListFormatted(List<T> activeEntities);
+    abstract void saveNewEntity(T entity);
+    abstract T prepareNewEntity();
+    abstract T requestEntityUpdatesFromUser(Long id);
 
     @Override
     public void showMenu() {
@@ -40,7 +41,7 @@ public abstract class GenericEntityController<T extends DBEntity,
 
         showInfoMessageYouAreAboutTo(CREATE, getEntityName(), entity);
         if (baseEntityView.userConfirmsOperation()) {
-            saveNewEntity(entity, CREATE);
+            saveNewEntity(entity);
         } else {
             showInfoMessageOperationCancelled(CREATE, getEntityName());
         }

@@ -16,22 +16,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.consoleCRUDApp.view.BaseView.INVALID_INPUT_PLEASE_ENTER_A_NUMERIC_VALUE;
+import static com.consoleCRUDApp.view.messages.ErrorMessages.Entity.INCORRECT_ID_INPUT_WRITER_POST_LIST_CONTAINS_NO_POST_WITH_THIS_ID;
+import static com.consoleCRUDApp.view.messages.ErrorMessages.Entity.SAVE_NEW_WRITER_OPERATION_FAILED;
+import static com.consoleCRUDApp.view.messages.ErrorMessages.Inputs.INVALID_INPUT_PLEASE_ENTER_A_NUMERIC_VALUE;
+import static com.consoleCRUDApp.view.messages.SystemMessages.Entity.*;
 
 public class WriterController
         extends GenericEntityController<Writer, WriterServiceImpl, WriterView>
         implements LabelNamesInputDialog, PostCreateInputDialog {
 
     private static final String WRITER_ENTITY_NAME = "WRITER";
-
-    private static final String INCORRECT_ID_INPUT_WRITER_POST_LIST_CONTAINS_NO_POST_WITH_THIS_ID = "\nIncorrect ID input! Writer post list contains no post with this ID.\n";
-    private static final String PLEASE_INPUT_NEW_WRITER_S_FIRST_NAME = "\nPlease input new writer's First Name: ";
-    private static final String PLEASE_INPUT_NEW_WRITER_S_LAST_NAME = "\nPlease input new writer's Last Name: ";
-    private static final String WOULD_YOU_LIKE_TO_CREATE_WRITER_POST_LIST = "\nWould you like to CREATE Writer post list?";
-    private static final String PLEASE_INPUT_WRITER_S_NEW_FIRST_NAME = "\nPlease input writer's new First Name: ";
-    private static final String PLEASE_INPUT_WRITER_S_NEW_LAST_NAME = "Please input writer's new Last Name: ";
-    private static final String WOULD_YOU_LIKE_TO_UPDATE_WRITER_S_POSTS = "\nWould you like to update Writer's posts?";
-    private static final String WOULD_YOU_LIKE_TO_CONTINUE_TO_UPDATE_WRITER_S_POSTS_OR_SAVE_ALL_CHANGES = "\nWould you like to continue to update Writer's posts? (input 'n' => SAVE ALL CHANGES!)";
 
     private final WriterView writerView = baseEntityView;
 
@@ -83,11 +77,11 @@ public class WriterController
                 postList.add(newPost);
 
                 counter++;
-                writerView.showInConsole("\nWould you like to CREATE the new Writer post " + counter + "?");
+                writerView.showInConsole("\nWould you like to " + CREATE + " the new Writer post " + counter + "?");
             } while (writerView.userConfirmsOperation());
         }
         else {
-            showInfoMessageOperationCancelled("CREATE post list", WRITER_ENTITY_NAME);
+            showInfoMessageOperationCancelled(CREATE + " post list", WRITER_ENTITY_NAME);
         }
         return postList;
     }
@@ -133,7 +127,7 @@ public class WriterController
 
             try {
                 String userInputAnswerStr = writerView.getUserInput(
-                        "\nPlease choose the writer's post operation num: \n1 - UPDATE by ID, \n2 - DELETE by ID, \n3 - ADD new posts\n(or empty input to cancel): ");
+                        "\nPlease choose the writer's post operation num: \n1 - " + UPDATE + " by ID, \n2 - DELETE by ID, \n3 - ADD new posts\n(or empty input to cancel): ");
                 if (userInputAnswerStr.isEmpty()) {
                     break;
                 }
@@ -174,7 +168,7 @@ public class WriterController
 
     private List<Post> processRemovePostFromPostsByUserInputPostId(List<Post> posts, Long userInputPostId) {
         writerView.showInConsole(
-                "\nDo you confirm DELETE writer's post (ID='" + userInputPostId +"') operation?");
+                "\nDo you confirm " + DELETE + " writer's post (ID='" + userInputPostId + "') operation?");
         if (writerView.userConfirmsOperation()) {
             long finalUserInputPostId = userInputPostId;
             posts = posts.stream()
@@ -225,8 +219,7 @@ public class WriterController
             }
 
             if (!postIds.contains(userInputPostId)) {
-                writerView.showInConsole(
-                        INCORRECT_ID_INPUT_WRITER_POST_LIST_CONTAINS_NO_POST_WITH_THIS_ID);
+                writerView.showInConsole(INCORRECT_ID_INPUT_WRITER_POST_LIST_CONTAINS_NO_POST_WITH_THIS_ID);
                 isUserInputValid = false;
             }
         } while (!isUserInputValid);
@@ -243,15 +236,15 @@ public class WriterController
     }
 
     @Override
-    public void saveNewEntity(Writer newWriterToSave, String operationName) {
+    public void saveNewEntity(Writer newWriterToSave) {
         Optional<Writer> savedWriterOptional = service.save(newWriterToSave);
         if (savedWriterOptional.isPresent()) {
             if (savedWriterOptional.get().getId() != null) {
                 long savedId = savedWriterOptional.get().getId();
-                showInfoMessageEntityOperationFinishedSuccessfully(operationName, getEntityName(), savedId);
+                showInfoMessageEntityOperationFinishedSuccessfully(SAVE, getEntityName(), savedId);
             }
         } else {
-            writerView.showInConsole("\nSave new Writer operation failed!!!\n");
+            writerView.showInConsole(SAVE_NEW_WRITER_OPERATION_FAILED);
             showMenu();
         }
     }

@@ -10,13 +10,13 @@ import com.github.freva.asciitable.ColumnData;
 import java.util.List;
 import java.util.Optional;
 
+import static com.consoleCRUDApp.view.messages.ErrorMessages.Entity.SAVE_NEW_LABEL_OPERATION_FAILED;
+import static com.consoleCRUDApp.view.messages.SystemMessages.Entity.PLEASE_INPUT_THE_LABEL_NEW_NAME;
+
 public class LabelController
         extends GenericEntityController<Label, LabelServiceImpl, LabelView> {
 
     private static final String LABEL_ENTITY_NAME = "LABEL";
-
-    private static final String SAVE_NEW_LABEL_OPERATION_FAILED = "\nSave new Label operation failed!!!\n";
-    private static final String PLEASE_INPUT_THE_LABEL_NEW_NAME = "\nPlease input the Label new Name: ";
 
     private final LabelView labelView = baseEntityView;
 
@@ -35,11 +35,11 @@ public class LabelController
     }
 
     @Override
-    public void saveNewEntity(Label newLabelToSave, String operationName) {
+    public void saveNewEntity(Label newLabelToSave) {
         if (!service.isLabelExistInRepository(newLabelToSave)) {
             Optional<Label> savedLabel = service.save(newLabelToSave);
             savedLabel.ifPresentOrElse(
-                    label -> showInfoMessageEntityOperationFinishedSuccessfully(operationName, getEntityName(), label.getId()),
+                    label -> showInfoMessageEntityOperationFinishedSuccessfully(SAVE, getEntityName(), label.getId()),
                     () -> {
                         labelView.showInConsole(SAVE_NEW_LABEL_OPERATION_FAILED);
                         showMenu();

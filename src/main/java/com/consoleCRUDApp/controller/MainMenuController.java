@@ -2,7 +2,7 @@ package com.consoleCRUDApp.controller;
 
 import com.consoleCRUDApp.ApplicationContext;
 
-import static com.consoleCRUDApp.controller.EntityController.DEFAULT_RETURN_YOUR_INPUT_IS_NOT_A_COMMAND;
+import static com.consoleCRUDApp.view.messages.ErrorMessages.Inputs.DEFAULT_RETURN_YOUR_INPUT_IS_NOT_A_COMMAND;
 
 public class MainMenuController implements BaseController {
 

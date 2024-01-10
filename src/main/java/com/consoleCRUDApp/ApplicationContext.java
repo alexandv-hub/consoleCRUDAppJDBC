@@ -17,6 +17,8 @@ import com.consoleCRUDApp.view.PostView;
 import com.consoleCRUDApp.view.WriterView;
 import lombok.Getter;
 
+import static com.consoleCRUDApp.view.messages.ErrorMessages.Database.SORRY_FAILED_TO_INITIALIZE_APPLICATION_CONTEXT_AND_START_THE_APPLICATION;
+
 @Getter
 public class ApplicationContext {
 
@@ -63,7 +65,7 @@ public class ApplicationContext {
             postController = new PostController(postService, postView);
             writerController = new WriterController(writerService, writerView);
         } catch (Throwable t) {
-            System.out.println("Sorry, failed to initialize ApplicationContext and start the application: ");
+            System.out.println(SORRY_FAILED_TO_INITIALIZE_APPLICATION_CONTEXT_AND_START_THE_APPLICATION);
             t.printStackTrace(System.out);
             System.exit(1);
         }

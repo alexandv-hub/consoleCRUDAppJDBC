@@ -1,9 +1,12 @@
 package com.consoleCRUDApp.repository.hibernate;
 
-class SQLQueries {
+public final class SQLQueries {
 
     private SQLQueries() {
     }
+
+    public static final String POSTGRES_SQL_SELECT_DATNAME_FROM_PG_DATABASE = "SELECT datname FROM pg_database;";
+    public static final String SQL_CREATE_DATABASE = "CREATE DATABASE ";
 
     static final String SQL_INSERT_INTO_POST_LABEL =
             "INSERT INTO post_label (post_id, label_id, status) VALUES (:postId, :labelId, CAST(:status AS status_type)) " +

@@ -2,9 +2,9 @@ package com.consoleCRUDApp.view;
 
 import com.consoleCRUDApp.model.DBEntity;
 
-public abstract class BaseEntityView implements BaseView {
+import static com.consoleCRUDApp.view.messages.SystemMessages.Entity.ENTER_THE_ID_OF_THE_ENTITY;
 
-    private static final String ENTER_THE_ID_OF_THE_ENTITY = "\nPlease enter the ID of the entity: ";
+public abstract class BaseEntityView implements BaseView {
 
     public abstract void startMenu();
 

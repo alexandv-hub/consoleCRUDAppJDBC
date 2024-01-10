@@ -13,10 +13,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.consoleCRUDApp.controller.EntityController.GO_BACK_TO_MAIN_MENU_COMMAND;
+import static com.consoleCRUDApp.view.messages.SystemMessages.Entity.PLEASE_INPUT_NEW_LABEL_NAME;
 
 public class LabelView extends BaseEntityView {
 
-    private static final String PLEASE_INPUT_NEW_LABEL_NAME = "\nPlease input new Label Name: ";
     private LabelController labelController;
 
     private void ensureControllerIsInitialized() {
