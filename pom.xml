@@ -16,11 +16,11 @@
         <ascii-table.version>1.8.0</ascii-table.version>
         <mockito-core.version>5.5.0</mockito-core.version>
         <mockito-junit-jupiter.version>5.3.1</mockito-junit-jupiter.version>
-        <mysql-connector-j.version>8.2.0</mysql-connector-j.version>
+        <postgresql.version>42.7.1</postgresql.version>
         <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
         <junit-jupiter.version>5.10.0</junit-jupiter.version>
         <flyway-core.version>10.4.1</flyway-core.version>
-        <flyway-mysql.version>10.4.1</flyway-mysql.version>
+        <flyway-database-postgresql.version>10.4.1</flyway-database-postgresql.version>
         <hibernate-core.version>6.4.1.Final</hibernate-core.version>
         <hibernate-orm-core.version>6.2.7.Final</hibernate-orm-core.version>
     </properties>
@@ -55,10 +55,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.mysql</groupId>
-            <artifactId>mysql-connector-j</artifactId>
-            <version>${mysql-connector-j.version}</version>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
@@ -66,9 +67,11 @@
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-mysql</artifactId>
-            <version>${flyway-mysql.version}</version>
+            <artifactId>flyway-database-postgresql</artifactId>
+            <version>${flyway-database-postgresql.version}</version>
+            <scope>runtime</scope>
         </dependency>
+
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>

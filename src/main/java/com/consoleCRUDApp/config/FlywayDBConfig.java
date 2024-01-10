@@ -31,6 +31,8 @@ public class FlywayDBConfig {
             flyway.migrate();
         } catch (FlywayException fwe) {
             System.out.println("Flyway migration update failed!");
+            fwe.printStackTrace(System.out);
+            throw fwe;
         }
     }
 }

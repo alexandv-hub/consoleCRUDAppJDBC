@@ -14,18 +14,18 @@ public class DBCreator {
     }
 
     static void createDbIfNotExist() {
-        System.out.println("Connecting to MySQL Server...");
+        System.out.println("Connecting to PostgreSQL Server...");
         try (Connection connection = getServerConnection();
              Statement statement = connection.createStatement()) {
 
             Properties dbConnectionProperties = getProperties();
 
-            ResultSet resultSet = statement.executeQuery("SHOW DATABASES;");
+            ResultSet resultSet = statement.executeQuery("SELECT datname FROM pg_database;");
             boolean dbExists = false;
             while (resultSet.next()) {
                 if (dbConnectionProperties.getProperty("database.name").equals(resultSet.getString(1))) {
                     dbExists = true;
-                    System.out.println("Connected to MySQL Server successfully...");
+                    System.out.println("Connected to PostgreSQL Server successfully...");
                     break;
                 }
             }

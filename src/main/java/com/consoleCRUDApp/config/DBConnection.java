@@ -18,11 +18,16 @@ public class DBConnection {
     }
 
     static synchronized Connection getServerConnection() throws SQLException {
-        String serverUrl = properties.getProperty("database.url");
-        return DriverManager.getConnection(
-                serverUrl,
-                properties.getProperty("database.user"),
-                properties.getProperty("database.password"));
+        try {
+            String serverUrl = properties.getProperty("database.url");
+            return DriverManager.getConnection(
+                    serverUrl,
+                    properties.getProperty("database.user"),
+                    properties.getProperty("database.password"));
+        } catch (Exception e) {
+            System.out.println("DB connection failed!");
+            throw e;
+        }
     }
 
     static synchronized Properties getProperties() {
