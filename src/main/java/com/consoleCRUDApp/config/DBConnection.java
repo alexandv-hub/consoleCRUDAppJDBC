@@ -29,7 +29,6 @@ public class DBConnection {
         try {
             String serverUrl = properties.getProperty(PROPERTY_NAME_DATABASE_URL);
             return DriverManager.getConnection(
-
                     serverUrl,
                     properties.getProperty(PROPERTY_NAME_DATABASE_USER),
                     properties.getProperty(PROPERTY_NAME_DATABASE_PASSWORD));

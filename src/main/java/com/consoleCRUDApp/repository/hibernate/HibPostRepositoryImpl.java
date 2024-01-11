@@ -8,7 +8,6 @@ import com.consoleCRUDApp.repository.LabelRepository;
 import com.consoleCRUDApp.repository.PostRepository;
 import lombok.AllArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -16,8 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.consoleCRUDApp.repository.hibernate.HibernateUtil.getSessionFactory;
-import static com.consoleCRUDApp.repository.hibernate.SQLQueries.SQL_INSERT_INTO_POST_LABEL;
-import static com.consoleCRUDApp.repository.hibernate.SQLQueries.SQL_UPDATE_POST_LABEL_SET_STATUS_BY_POST_ID;
+import static com.consoleCRUDApp.repository.hibernate.SQLQueries.*;
 
 @AllArgsConstructor
 public class HibPostRepositoryImpl implements PostRepository {
@@ -43,8 +41,7 @@ public class HibPostRepositoryImpl implements PostRepository {
     public List<Post> findAll() {
         List<Post> posts = new ArrayList<>();
         getSessionFactory().inTransaction(session ->
-                posts.addAll(session.createSelectionQuery(
-                                "from Post where status = :status ", Post.class)
+                posts.addAll(session.createSelectionQuery(HQL_FROM_POST_WHERE_STATUS, Post.class)
                         .setParameter("status", Status.ACTIVE)
                         .getResultList()));
         return posts;
@@ -54,8 +51,7 @@ public class HibPostRepositoryImpl implements PostRepository {
     public Optional<Post> findById(Long id) {
         AtomicReference<Post> postAtomicReference = new AtomicReference<>();
         getSessionFactory().inTransaction(session ->
-                session.createQuery(
-                                "from Post where id = :id and status = :status", Post.class)
+                session.createQuery(FROM_POST_WHERE_ID_AND_STATUS, Post.class)
                         .setParameter("id", id)
                         .setParameter("status", Status.ACTIVE)
                         .uniqueResultOptional()
@@ -113,8 +109,7 @@ public class HibPostRepositoryImpl implements PostRepository {
         AtomicBoolean isDeleted = new AtomicBoolean(false);
 
         getSessionFactory().inTransaction(session -> {
-            int affectedRows = session.createMutationQuery(
-                            "update Post set status = :status, postStatus = :postStatus where id = :id")
+            int affectedRows = session.createMutationQuery(HQL_UPDATE_POST_SET_STATUS_POST_STATUS_WHERE_ID)
                     .setParameter("status", Status.DELETED)
                     .setParameter("postStatus", PostStatus.DELETED)
                     .setParameter("id", id)

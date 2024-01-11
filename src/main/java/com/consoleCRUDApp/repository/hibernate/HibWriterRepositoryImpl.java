@@ -12,8 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.consoleCRUDApp.repository.hibernate.HibernateUtil.getSessionFactory;
-import static com.consoleCRUDApp.repository.hibernate.SQLQueries.SQL_INSERT_INTO_WRITER_POST;
-import static com.consoleCRUDApp.repository.hibernate.SQLQueries.SQL_UPDATE_WRITER_POST_SET_STATUS_BY_POST_ID;
+import static com.consoleCRUDApp.repository.hibernate.SQLQueries.*;
 
 
 @AllArgsConstructor
@@ -40,8 +39,7 @@ public class HibWriterRepositoryImpl implements WriterRepository {
         AtomicReference<Writer> postAtomicReference = new AtomicReference<>();
 
         getSessionFactory().inTransaction(session ->
-                session.createQuery(
-                                "from Writer where id = :id and status = :status", Writer.class)
+                session.createQuery(HQL_FROM_WRITER_WHERE_ID_AND_STATUS, Writer.class)
                         .setParameter("id", id)
                         .setParameter("status", Status.ACTIVE)
                         .uniqueResultOptional()
@@ -55,8 +53,7 @@ public class HibWriterRepositoryImpl implements WriterRepository {
     public List<Writer> findAll() {
         List<Writer> writers = new ArrayList<>();
         getSessionFactory().inTransaction(session ->
-                writers.addAll(session.createSelectionQuery(
-                                "from Writer where status = :status ", Writer.class)
+                writers.addAll(session.createSelectionQuery(HQL_FROM_WRITER_WHERE_STATUS, Writer.class)
                         .setParameter("status", Status.ACTIVE)
                         .getResultList()));
         return writers;
@@ -117,8 +114,7 @@ public class HibWriterRepositoryImpl implements WriterRepository {
         AtomicBoolean isDeleted = new AtomicBoolean(false);
 
         getSessionFactory().inTransaction(session -> {
-            int affectedRows = session.createMutationQuery(
-                            "update Writer set status = :status where id = :id")
+            int affectedRows = session.createMutationQuery(HQL_UPDATE_WRITER_SET_STATUS_WHERE_ID)
                     .setParameter("status", Status.DELETED)
                     .setParameter("id", id)
                     .executeUpdate();

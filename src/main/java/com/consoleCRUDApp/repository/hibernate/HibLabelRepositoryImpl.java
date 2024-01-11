@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.consoleCRUDApp.repository.hibernate.HibernateUtil.getSessionFactory;
+import static com.consoleCRUDApp.repository.hibernate.SQLQueries.*;
 
 public class HibLabelRepositoryImpl implements LabelRepository {
 
@@ -26,8 +27,7 @@ public class HibLabelRepositoryImpl implements LabelRepository {
     public List<Label> findAll() {
         List<Label> labels = new ArrayList<>();
         getSessionFactory().inTransaction(session ->
-                labels.addAll(session.createSelectionQuery(
-                                "from Label where status = :status ", Label.class)
+                labels.addAll(session.createSelectionQuery(HQL_FROM_LABEL_WHERE_STATUS, Label.class)
                         .setParameter("status", Status.ACTIVE)
                         .getResultList()));
         return labels;
@@ -38,8 +38,7 @@ public class HibLabelRepositoryImpl implements LabelRepository {
         AtomicBoolean isLabelExistInRepository = new AtomicBoolean(false);
 
         getSessionFactory().inTransaction(session ->
-                session.createQuery(
-                                "from Label where name = :name and status = :status", Label.class)
+                session.createQuery(HQL_FROM_LABEL_WHERE_NAME_AND_STATUS, Label.class)
                         .setParameter("name", label.getName())
                         .setParameter("status", Status.ACTIVE)
                         .uniqueResultOptional()
@@ -53,8 +52,7 @@ public class HibLabelRepositoryImpl implements LabelRepository {
         AtomicReference<Label> labelAtomicReference = new AtomicReference<>();
 
         getSessionFactory().inTransaction(session ->
-                session.createQuery(
-                                "from Label where name = :name and status = :status", Label.class)
+                session.createQuery(HQL_FROM_LABEL_WHERE_NAME_AND_STATUS, Label.class)
                         .setParameter("name", labelName)
                         .setParameter("status", Status.ACTIVE)
                         .uniqueResultOptional()
@@ -68,8 +66,7 @@ public class HibLabelRepositoryImpl implements LabelRepository {
         AtomicReference<Label> labelAtomicReference = new AtomicReference<>();
 
         getSessionFactory().inTransaction(session ->
-                session.createQuery(
-                                "from Label where id = :id and status = :status", Label.class)
+                session.createQuery(HQL_FROM_LABEL_WHERE_ID_AND_STATUS, Label.class)
                         .setParameter("id", id)
                         .setParameter("status", Status.ACTIVE)
                         .uniqueResultOptional()
@@ -92,8 +89,7 @@ public class HibLabelRepositoryImpl implements LabelRepository {
         AtomicBoolean isDeleted = new AtomicBoolean(false);
 
         getSessionFactory().inTransaction(session -> {
-            int affectedRows = session.createMutationQuery(
-                            "update Label set status = :status where id = :id")
+            int affectedRows = session.createMutationQuery(HQL_UPDATE_LABEL_SET_STATUS_WHERE_ID)
                     .setParameter("status", Status.DELETED)
                     .setParameter("id", id)
                     .executeUpdate();

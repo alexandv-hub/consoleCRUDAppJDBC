@@ -127,7 +127,11 @@ public class WriterController
 
             try {
                 String userInputAnswerStr = writerView.getUserInput(
-                        "\nPlease choose the writer's post operation num: \n1 - " + UPDATE + " by ID, \n2 - DELETE by ID, \n3 - ADD new posts\n(or empty input to cancel): ");
+                        "\nPlease choose the writer's post operation num: " +
+                                "\n1 - " + UPDATE + " by ID, " +
+                                "\n2 - " + DELETE + " by ID, " +
+                                "\n3 - ADD new posts" +
+                                "\n(or empty input to cancel): ");
                 if (userInputAnswerStr.isEmpty()) {
                     break;
                 }
