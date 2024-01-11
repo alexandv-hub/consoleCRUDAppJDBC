@@ -51,7 +51,7 @@ public class HibPostRepositoryImpl implements PostRepository {
     public Optional<Post> findById(Long id) {
         AtomicReference<Post> postAtomicReference = new AtomicReference<>();
         getSessionFactory().inTransaction(session ->
-                session.createQuery(FROM_POST_WHERE_ID_AND_STATUS, Post.class)
+                session.createQuery(HQL_FROM_POST_WHERE_ID_AND_STATUS, Post.class)
                         .setParameter("id", id)
                         .setParameter("status", Status.ACTIVE)
                         .uniqueResultOptional()

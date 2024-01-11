@@ -29,12 +29,12 @@ public final class SQLQueries {
     static final String HQL_FROM_LABEL_WHERE_ID_AND_STATUS = "from Label where id = :id and status = :status";
     static final String HQL_UPDATE_LABEL_SET_STATUS_WHERE_ID = "update Label set status = :status where id = :id";
 
-    public static final String HQL_FROM_POST_WHERE_STATUS = "from Post where status = :status ";
-    public static final String FROM_POST_WHERE_ID_AND_STATUS = "from Post where id = :id and status = :status";
-    public static final String HQL_UPDATE_POST_SET_STATUS_POST_STATUS_WHERE_ID = "update Post set status = :status, postStatus = :postStatus where id = :id";
+    static final String HQL_FROM_POST_WHERE_STATUS = "from Post where status = :status ";
+    static final String HQL_FROM_POST_WHERE_ID_AND_STATUS = "from Post where id = :id and status = :status";
+    static final String HQL_UPDATE_POST_SET_STATUS_POST_STATUS_WHERE_ID = "update Post set status = :status, postStatus = :postStatus where id = :id";
 
-    public static final String HQL_FROM_WRITER_WHERE_ID_AND_STATUS = "from Writer where id = :id and status = :status";
-    public static final String HQL_FROM_WRITER_WHERE_STATUS = "from Writer where status = :status ";
-    public static final String HQL_UPDATE_WRITER_SET_STATUS_WHERE_ID = "update Writer set status = :status where id = :id";
+    static final String HQL_FROM_WRITER_WHERE_ID_AND_STATUS = "from Writer where id = :id and status = :status";
+    static final String HQL_FROM_WRITER_WHERE_STATUS = "from Writer where status = :status ";
+    static final String HQL_UPDATE_WRITER_SET_STATUS_WHERE_ID = "update Writer set status = :status where id = :id";
 
 }
