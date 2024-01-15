@@ -12,6 +12,7 @@ public final class ErrorMessages {
         public static final String DATABASE_CREATION_FAILED = "Database creation failed!";
         public static final String FLYWAY_MIGRATION_UPDATE_FAILED = "Flyway migration update failed!";
         public static final String SORRY_FAILED_TO_INITIALIZE_APPLICATION_CONTEXT_AND_START_THE_APPLICATION = "Failed to initialize ApplicationContext and start the application: ";
+        public static final String ERROR_WHEN_SETTING_UP_HIBERNATE_SESSION_FACTORY = "Error when setting up Hibernate SessionFactory!";
     }
 
     public static class Inputs {

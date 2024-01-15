@@ -39,8 +39,8 @@ public class LabelServiceImpl implements LabelService {
     }
 
     @Override
-    public boolean isLabelExistInRepository(Label label) {
-        return labelRepository.isLabelExistInRepository(label);
+    public Optional<Label> findByName(String labelName) {
+        return labelRepository.findByName(labelName);
     }
 
 }

@@ -2,8 +2,10 @@ package com.consoleCRUDApp.service;
 
 import com.consoleCRUDApp.model.Label;
 
+import java.util.Optional;
+
 public interface LabelService extends GenericEntityService<Label> {
 
-    boolean isLabelExistInRepository(Label label);
+    Optional<Label> findByName(String labelName);
 
 }

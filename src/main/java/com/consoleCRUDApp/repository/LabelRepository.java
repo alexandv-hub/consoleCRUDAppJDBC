@@ -6,7 +6,6 @@ import java.util.Optional;
 
 public interface LabelRepository extends GenericRepository<Label, Long> {
 
-    boolean isLabelExistInRepository(Label entity);
+    Optional<Label> findByName(String labelName);
 
-    Optional<Label> getLabelByName(String labelName);
 }

@@ -36,7 +36,7 @@ public class LabelController
 
     @Override
     public void saveNewEntity(Label newLabelToSave) {
-        if (!service.isLabelExistInRepository(newLabelToSave)) {
+        if (service.findByName(newLabelToSave.getName()).isEmpty()) {
             Optional<Label> savedLabel = service.save(newLabelToSave);
             savedLabel.ifPresentOrElse(
                     label -> showInfoMessageEntityOperationFinishedSuccessfully(SAVE, getEntityName(), label.getId()),

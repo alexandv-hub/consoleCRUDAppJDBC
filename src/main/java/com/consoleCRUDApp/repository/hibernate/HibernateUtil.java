@@ -9,6 +9,8 @@ import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
+import static com.consoleCRUDApp.view.messages.ErrorMessages.Database.ERROR_WHEN_SETTING_UP_HIBERNATE_SESSION_FACTORY;
+
 @Getter
 public class HibernateUtil {
 
@@ -25,7 +27,6 @@ public class HibernateUtil {
     }
 
     private static void setUp() {
-        // A SessionFactory is set up once for an application!
         final StandardServiceRegistry registry =
                 new StandardServiceRegistryBuilder()
                         .build();
@@ -42,6 +43,8 @@ public class HibernateUtil {
             // The registry would be destroyed by the SessionFactory, but we
             // had trouble building the SessionFactory so destroy it manually.
             StandardServiceRegistryBuilder.destroy(registry);
+            System.out.println(ERROR_WHEN_SETTING_UP_HIBERNATE_SESSION_FACTORY);
+            throw e;
         }
     }
 }

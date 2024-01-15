@@ -50,8 +50,8 @@ public class ApplicationContext {
 
         try {
             LabelRepository labelRepository = new HibLabelRepositoryImpl();
-            PostRepository postRepository = new HibPostRepositoryImpl(labelRepository);
-            WriterRepository writerRepository = new HibWriterRepositoryImpl(postRepository);
+            PostRepository postRepository = new HibPostRepositoryImpl();
+            WriterRepository writerRepository = new HibWriterRepositoryImpl();
 
             LabelServiceImpl labelService = new LabelServiceImpl(labelRepository);
             PostServiceImpl postService = new PostServiceImpl(postRepository);

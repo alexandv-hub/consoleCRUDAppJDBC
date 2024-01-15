@@ -22,7 +22,7 @@
         <flyway-core.version>10.4.1</flyway-core.version>
         <flyway-database-postgresql.version>10.4.1</flyway-database-postgresql.version>
         <hibernate-core.version>6.4.1.Final</hibernate-core.version>
-        <hibernate-orm-core.version>6.2.7.Final</hibernate-orm-core.version>
+        <hibernate-orm-core.version>6.4.1.Final</hibernate-orm-core.version>
     </properties>
     <dependencies>
         <dependency>
